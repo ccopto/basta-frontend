@@ -1,0 +1,12 @@
+**/.git
+**/node_modules
+**/dist
+**/.angular
+**/.vscode
+**/.idea
+**/coverage
+**/e2e
+**/*.md
+**/*.spec.ts
+**/Thumbs.db
+**/.DS_Store
