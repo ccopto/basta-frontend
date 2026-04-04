@@ -1,0 +1,58 @@
+{
+  "APP": {
+    "TITLE": "¡Basta! En Línea"
+  },
+  "HOME": {
+    "TITLE": "¡Bienvenido a Basta!",
+    "NICKNAME_LABEL": "Tu Apodo",
+    "NICKNAME_PLACEHOLDER": "Escribe un apodo...",
+    "LANGUAGE_LABEL": "Idioma",
+    "CREATE_GAME": "Crear Partida",
+    "JOIN_GAME": "Unirse a Partida",
+    "GAME_CODE_LABEL": "Código de Partida",
+    "GAME_CODE_PLACEHOLDER": "Ingresa el código..."
+  },
+  "LOBBY": {
+    "TITLE": "Sala de Espera",
+    "PLAYERS": "Jugadores",
+    "WAITING": "Esperando jugadores...",
+    "START_GAME": "Iniciar Partida",
+    "GAME_CODE": "Código de Partida",
+    "COPY_CODE": "Copiar Código"
+  },
+  "SETUP": {
+    "TITLE": "Configuración de Partida",
+    "ROUNDS_LABEL": "Número de Rondas",
+    "TIMER_LABEL": "Temporizador (segundos)",
+    "CATEGORIES_LABEL": "Categorías",
+    "START": "Iniciar Partida"
+  },
+  "GAME": {
+    "ROUND": "Ronda",
+    "LETTER": "Letra",
+    "TIME_LEFT": "Tiempo Restante",
+    "BASTA": "¡Basta!",
+    "SUBMIT": "Enviar Respuestas"
+  },
+  "SCORING": {
+    "TITLE": "Puntuación y Validación",
+    "VALID": "Válida",
+    "INVALID": "Inválida",
+    "SUBMIT_VALIDATION": "Enviar Validación",
+    "UNIQUE": "Única (10 pts)",
+    "SHARED": "Compartida (5 pts)"
+  },
+  "GAME_OVER": {
+    "TITLE": "Fin del Juego",
+    "WINNER": "Ganador",
+    "FINAL_SCORES": "Puntuaciones Finales",
+    "PLAY_AGAIN": "Jugar de Nuevo",
+    "BACK_HOME": "Volver al Inicio"
+  },
+  "ERRORS": {
+    "INVALID_CODE": "Código de partida inválido.",
+    "GAME_FULL": "Esta partida está llena.",
+    "NICKNAME_REQUIRED": "Por favor ingresa un apodo.",
+    "CONNECTION_LOST": "Conexión perdida. Reconectando..."
+  }
+}

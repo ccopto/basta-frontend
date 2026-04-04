@@ -1,0 +1,58 @@
+{
+  "APP": {
+    "TITLE": "Basta! Online"
+  },
+  "HOME": {
+    "TITLE": "Welcome to Basta!",
+    "NICKNAME_LABEL": "Your Nickname",
+    "NICKNAME_PLACEHOLDER": "Enter a nickname...",
+    "LANGUAGE_LABEL": "Language",
+    "CREATE_GAME": "Create Game",
+    "JOIN_GAME": "Join Game",
+    "GAME_CODE_LABEL": "Game Code",
+    "GAME_CODE_PLACEHOLDER": "Enter game code..."
+  },
+  "LOBBY": {
+    "TITLE": "Game Lobby",
+    "PLAYERS": "Players",
+    "WAITING": "Waiting for players...",
+    "START_GAME": "Start Game",
+    "GAME_CODE": "Game Code",
+    "COPY_CODE": "Copy Code"
+  },
+  "SETUP": {
+    "TITLE": "Game Setup",
+    "ROUNDS_LABEL": "Number of Rounds",
+    "TIMER_LABEL": "Timer (seconds)",
+    "CATEGORIES_LABEL": "Categories",
+    "START": "Start Game"
+  },
+  "GAME": {
+    "ROUND": "Round",
+    "LETTER": "Letter",
+    "TIME_LEFT": "Time Left",
+    "BASTA": "¡Basta!",
+    "SUBMIT": "Submit Answers"
+  },
+  "SCORING": {
+    "TITLE": "Scoring & Validation",
+    "VALID": "Valid",
+    "INVALID": "Invalid",
+    "SUBMIT_VALIDATION": "Submit Validation",
+    "UNIQUE": "Unique (10 pts)",
+    "SHARED": "Shared (5 pts)"
+  },
+  "GAME_OVER": {
+    "TITLE": "Game Over",
+    "WINNER": "Winner",
+    "FINAL_SCORES": "Final Scores",
+    "PLAY_AGAIN": "Play Again",
+    "BACK_HOME": "Back to Home"
+  },
+  "ERRORS": {
+    "INVALID_CODE": "Invalid game code.",
+    "GAME_FULL": "This game is full.",
+    "NICKNAME_REQUIRED": "Please enter a nickname.",
+    "CONNECTION_LOST": "Connection lost. Reconnecting..."
+  }
+}
