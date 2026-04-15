@@ -104,7 +104,7 @@ import { PlayerStateService } from '../../services/player-state.service';
                 style="text-transform: uppercase;"
               />
               <div *ngIf="joinForm.get('gameCode')?.touched && joinForm.get('gameCode')?.invalid" class="error-msg">
-                Game Code is required.
+                Game codes are 4 characters (e.g. ABCD).
               </div>
             </div>
 
@@ -366,7 +366,7 @@ export class HomeComponent {
 
     this.joinForm = this.fb.group({
       nickname: [existingNick, [Validators.required, Validators.pattern(/.*[^\s].*/)]],
-      gameCode: ['', [Validators.required, Validators.pattern(/.*[^\s].*/)]],
+      gameCode: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4}$/i)]],
       language: ['en']
     });
   }
@@ -448,7 +448,7 @@ export class HomeComponent {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err.message || 'Failed to join game. Please log in with correct code.';
+        this.errorMessage = err.message || 'Could not join. Check the game code and try again.';
         console.error('Join game error', err);
       }
     });
