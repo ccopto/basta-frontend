@@ -14,12 +14,14 @@ export interface PlayerState {
 export class PlayerStateService {
   private readonly STATE_KEY = 'basta_player_state';
   
-  private initialState: PlayerState = {
-    userId: null,
-    nickname: '',
-    isHost: false,
-    gameCode: null
-  };
+  private getInitialState(): PlayerState {
+    return {
+      userId: null,
+      nickname: '',
+      isHost: false,
+      gameCode: null
+    };
+  }
 
   private stateSubject = new BehaviorSubject<PlayerState>(this.loadState());
   public state$ = this.stateSubject.asObservable();
@@ -37,7 +39,7 @@ export class PlayerStateService {
   }
 
   public clearState(): void {
-    this.stateSubject.next(this.initialState);
+    this.stateSubject.next(this.getInitialState());
     sessionStorage.removeItem(this.STATE_KEY);
   }
 
@@ -50,7 +52,7 @@ export class PlayerStateService {
         console.error('Failed to parse player state', e);
       }
     }
-    return this.initialState;
+    return this.getInitialState();
   }
 
   private saveState(state: PlayerState): void {
