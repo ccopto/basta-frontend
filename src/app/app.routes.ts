@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { lobbyGuard } from './guards/lobby.guard';
 
 export const routes: Routes = [
   {
@@ -14,6 +15,7 @@ export const routes: Routes = [
   {
     path: 'lobby/:code',
     loadComponent: () => import('./pages/lobby/lobby.component').then(m => m.LobbyComponent),
+    canActivate: [lobbyGuard],
     title: 'Basta! — Lobby'
   },
   {

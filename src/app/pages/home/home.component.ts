@@ -1,10 +1,15 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { GameService } from '../../services/game.service';
+import { PlayerStateService } from '../../services/player-state.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
   template: `
     <div class="landing">
 
@@ -22,37 +27,63 @@ import { TranslateModule } from '@ngx-translate/core';
         </div>
       </section>
 
-      <!-- Status Card -->
-      <section class="status-section">
-        <div class="glass-card status-card animate-scale-in">
-          <h2 class="status-title">🚀 System Status</h2>
-          <div class="status-grid">
-            <div class="status-item">
-              <span class="status-dot online"></span>
-              <span class="status-label">Frontend</span>
-              <span class="status-value">Angular 21</span>
+      <!-- Action Area -->
+      <section class="action-section animate-scale-in">
+        <div class="glass-card form-card">
+          <h2 class="form-title">Start Playing</h2>
+          
+          <form [formGroup]="gameForm" (ngSubmit)="onCreateGame()">
+            <div class="form-group">
+              <label for="nickname">Choose a Nickname</label>
+              <input 
+                type="text" 
+                id="nickname" 
+                formControlName="nickname" 
+                placeholder="e.g. WordMaster99" 
+                maxlength="50"
+                autocomplete="off"
+              />
+              <div *ngIf="gameForm.get('nickname')?.touched && gameForm.get('nickname')?.invalid" class="error-msg">
+                Nickname is required (no just spaces).
+              </div>
             </div>
-            <div class="status-item">
-              <span class="status-dot pending"></span>
-              <span class="status-label">Backend</span>
-              <span class="status-value">.NET 10</span>
+
+            <div class="form-group">
+              <label for="language">Game Language</label>
+              <select id="language" formControlName="language">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+              </select>
             </div>
-            <div class="status-item">
-              <span class="status-dot pending"></span>
-              <span class="status-label">SignalR</span>
-              <span class="status-value">Not Connected</span>
+
+            <div class="form-actions">
+              <button 
+                type="submit" 
+                class="btn btn-primary" 
+                [disabled]="gameForm.invalid || isLoading">
+                {{ isLoading ? 'Creating...' : 'Create Game' }}
+              </button>
+              
+              <div class="divider"><span>OR</span></div>
+              
+              <button type="button" class="btn btn-secondary" (click)="onJoinGame()">
+                Join Existing Game
+              </button>
             </div>
-            <div class="status-item">
-              <span class="status-dot pending"></span>
-              <span class="status-label">Database</span>
-              <span class="status-value">SQLite</span>
+            
+            <div *ngIf="showJoinForm" class="join-placeholder" style="margin-top: 1rem; text-align: center; color: var(--color-text-secondary); font-size: 0.9em;">
+              Join flow coming soon...
             </div>
-          </div>
+
+            <div *ngIf="errorMessage" class="error-msg global-error">
+              {{ errorMessage }}
+            </div>
+          </form>
         </div>
       </section>
 
       <!-- Features Preview -->
-      <section class="features-section">
+      <section class="features-section animate-fade-in">
         <div class="features-grid">
           <div class="glass-card feature-card">
             <div class="feature-icon">🎲</div>
@@ -77,10 +108,6 @@ import { TranslateModule } from '@ngx-translate/core';
         </div>
       </section>
 
-      <!-- Footer -->
-      <footer class="landing-footer">
-        <p>Sprint 0 — Project Bootstrapping Complete ✅</p>
-      </footer>
     </div>
   `,
   styles: [`
@@ -97,7 +124,7 @@ import { TranslateModule } from '@ngx-translate/core';
     /* --- Hero --- */
     .hero {
       text-align: center;
-      padding: var(--space-3xl) 0 var(--space-xl);
+      padding: var(--space-2xl) 0 var(--space-lg);
     }
 
     .hero-title {
@@ -137,66 +164,79 @@ import { TranslateModule } from '@ngx-translate/core';
       font-weight: 600;
     }
 
-    /* --- Status Card --- */
-    .status-section {
+    /* --- Action Section & Forms --- */
+    .action-section {
       width: 100%;
-      max-width: 600px;
+      max-width: 400px;
       margin-bottom: var(--space-2xl);
+      position: relative;
+      z-index: 10;
     }
 
-    .status-card {
+    .form-card {
+      padding: var(--space-xl);
+    }
+
+    .form-title {
       text-align: center;
-    }
-
-    .status-title {
-      font-size: var(--font-size-xl);
       margin-bottom: var(--space-lg);
+      font-size: var(--font-size-xl);
     }
 
-    .status-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-md);
+    .form-group {
+      margin-bottom: var(--space-md);
     }
 
-    .status-item {
+    .form-group label {
+      display: block;
+      margin-bottom: var(--space-xs);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .error-msg {
+      color: var(--color-error);
+      font-size: var(--font-size-xs);
+      margin-top: var(--space-xs);
+    }
+
+    .global-error {
+      margin-top: var(--space-md);
+      text-align: center;
+      padding: var(--space-sm);
+      background: hsla(0, 84%, 60%, 0.1);
+      border-radius: var(--radius-sm);
+    }
+
+    .form-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      margin-top: var(--space-lg);
+    }
+    
+    .form-actions .btn {
+      width: 100%;
+    }
+
+    .divider {
       display: flex;
       align-items: center;
-      gap: var(--space-sm);
-      padding: var(--space-sm) var(--space-md);
-      background: var(--color-surface);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--color-border);
-    }
-
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .status-dot.online {
-      background: var(--color-success);
-      box-shadow: 0 0 8px var(--color-success);
-      animation: pulse 2s infinite;
-    }
-
-    .status-dot.pending {
-      background: var(--color-warning);
-      box-shadow: 0 0 6px var(--color-warning);
-    }
-
-    .status-label {
-      font-weight: 600;
-      font-size: var(--font-size-sm);
-      color: var(--color-text);
-    }
-
-    .status-value {
-      margin-left: auto;
-      font-size: var(--font-size-xs);
+      text-align: center;
       color: var(--color-text-muted);
+      font-size: var(--font-size-xs);
+      margin: var(--space-xs) 0;
+    }
+    
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .divider span {
+      padding: 0 var(--space-sm);
     }
 
     /* --- Features --- */
@@ -239,23 +279,75 @@ import { TranslateModule } from '@ngx-translate/core';
       line-height: 1.5;
     }
 
-    /* --- Footer --- */
-    .landing-footer {
-      margin-top: auto;
-      padding: var(--space-xl) 0;
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
-    }
-
     /* --- Responsive --- */
     @media (max-width: 600px) {
-      .status-grid {
-        grid-template-columns: 1fr;
-      }
       .features-grid {
         grid-template-columns: 1fr;
       }
     }
   `]
 })
-export class HomeComponent {}
+export class HomeComponent {
+  gameForm: FormGroup;
+  isLoading = false;
+  errorMessage = '';
+  showJoinForm = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private gameService: GameService,
+    private playerState: PlayerStateService,
+    private router: Router
+  ) {
+    // Populate with existing nickname if they came back to the home page
+    const existingNick = this.playerState.currentState.nickname;
+
+    this.gameForm = this.fb.group({
+      nickname: [existingNick, [Validators.required, Validators.pattern(/.*[^\s].*/)]],
+      language: ['en']
+    });
+  }
+
+  onCreateGame() {
+    if (this.gameForm.invalid) {
+      this.gameForm.markAllAsTouched();
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    const req = {
+      hostNickname: this.gameForm.value.nickname,
+      preferredLanguage: this.gameForm.value.language,
+      totalRounds: GameService.DEFAULT_ROUNDS,
+      timerDuration: GameService.DEFAULT_TIMER
+    };
+
+    this.gameService.createGame(req).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        
+        // Update local state
+        this.playerState.updateState({
+          userId: res.hostUserId,
+          nickname: req.hostNickname.trim(),
+          isHost: true,
+          gameCode: res.gameCode
+        });
+
+        // Navigate to lobby
+        this.router.navigate(['/lobby', res.gameCode]);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = 'Failed to create game. Please try again.';
+        console.error('Create game error', err);
+      }
+    });
+  }
+
+  onJoinGame() {
+    this.showJoinForm = !this.showJoinForm;
+  }
+}
