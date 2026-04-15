@@ -14,6 +14,7 @@ export const routes: Routes = [
   {
     path: 'lobby/:code',
     loadComponent: () => import('./pages/lobby/lobby.component').then(m => m.LobbyComponent),
+    canActivate: [import('./guards/lobby.guard').then(m => m.lobbyGuard)],
     title: 'Basta! — Lobby'
   },
   {
