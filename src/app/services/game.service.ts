@@ -16,6 +16,33 @@ export interface CreateGameResponse {
   hostUserId: number;
 }
 
+export interface JoinGameRequest {
+  nickname: string;
+  preferredLanguage: string;
+}
+
+export interface JoinGameResponse {
+  gameCode: string;
+  userId: number;
+}
+
+export interface PlayerDto {
+  userId: number;
+  nickname: string;
+  isHost: boolean;
+  isOnline: boolean;
+  totalScore: number;
+}
+
+export interface LobbySnapshot {
+  gameCode: string;
+  targetScore: number;
+  timerDuration: number;
+  language: string;
+  state: string;
+  players: PlayerDto[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -27,6 +54,18 @@ export class GameService {
 
   public createGame(request: CreateGameRequest): Observable<CreateGameResponse> {
     return this.api.post<CreateGameResponse>('/games', request).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  public joinGame(gameCode: string, request: JoinGameRequest): Observable<JoinGameResponse> {
+    return this.api.post<JoinGameResponse>(`/games/${gameCode}/join`, request).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  public getGame(gameCode: string): Observable<LobbySnapshot> {
+    return this.api.get<LobbySnapshot>(`/games/${gameCode}`).pipe(
       catchError(this.handleError)
     );
   }

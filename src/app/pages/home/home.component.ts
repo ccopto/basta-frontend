@@ -32,7 +32,7 @@ import { PlayerStateService } from '../../services/player-state.service';
         <div class="glass-card form-card">
           <h2 class="form-title">Start Playing</h2>
           
-          <form [formGroup]="gameForm" (ngSubmit)="onCreateGame()">
+          <form *ngIf="!showJoinForm" [formGroup]="gameForm" (ngSubmit)="onCreateGame()">
             <div class="form-group">
               <label for="nickname">Choose a Nickname</label>
               <input 
@@ -70,12 +70,68 @@ import { PlayerStateService } from '../../services/player-state.service';
                 Join Existing Game
               </button>
             </div>
-            
-            <div *ngIf="showJoinForm" class="join-placeholder" style="margin-top: 1rem; text-align: center; color: var(--color-text-secondary); font-size: 0.9em;">
-              Join flow coming soon...
+
+            <div *ngIf="errorMessage && !showJoinForm" class="error-msg global-error">
+              {{ errorMessage }}
+            </div>
+          </form>
+
+          <form *ngIf="showJoinForm" [formGroup]="joinForm" (ngSubmit)="onJoinSubmit()">
+            <div class="form-group">
+              <label for="joinNickname">Your Nickname</label>
+              <input 
+                type="text" 
+                id="joinNickname" 
+                formControlName="nickname" 
+                placeholder="e.g. WordMaster99" 
+                maxlength="50"
+                autocomplete="off"
+              />
+              <div *ngIf="joinForm.get('nickname')?.touched && joinForm.get('nickname')?.invalid" class="error-msg">
+                Nickname is required.
+              </div>
             </div>
 
-            <div *ngIf="errorMessage" class="error-msg global-error">
+            <div class="form-group">
+              <label for="gameCode">Game Code</label>
+              <input 
+                type="text" 
+                id="gameCode" 
+                formControlName="gameCode" 
+                placeholder="e.g. ABCD" 
+                maxlength="10"
+                autocomplete="off"
+                style="text-transform: uppercase;"
+              />
+              <div *ngIf="joinForm.get('gameCode')?.touched && joinForm.get('gameCode')?.invalid" class="error-msg">
+                Game Code is required.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="joinLanguage">Preferred Language</label>
+              <select id="joinLanguage" formControlName="language">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button 
+                type="submit" 
+                class="btn btn-primary" 
+                [disabled]="joinForm.invalid || isLoading">
+                {{ isLoading ? 'Joining...' : 'Join Game' }}
+              </button>
+              
+              <div class="divider"><span>OR</span></div>
+              
+              <button type="button" class="btn btn-secondary" (click)="onJoinGame()">
+                Back to Create Game
+              </button>
+            </div>
+
+            <div *ngIf="errorMessage && showJoinForm" class="error-msg global-error">
               {{ errorMessage }}
             </div>
           </form>
@@ -289,6 +345,7 @@ import { PlayerStateService } from '../../services/player-state.service';
 })
 export class HomeComponent {
   gameForm: FormGroup;
+  joinForm: FormGroup;
   isLoading = false;
   errorMessage = '';
   showJoinForm = false;
@@ -304,6 +361,12 @@ export class HomeComponent {
 
     this.gameForm = this.fb.group({
       nickname: [existingNick, [Validators.required, Validators.pattern(/.*[^\s].*/)]],
+      language: ['en']
+    });
+
+    this.joinForm = this.fb.group({
+      nickname: [existingNick, [Validators.required, Validators.pattern(/.*[^\s].*/)]],
+      gameCode: ['', [Validators.required, Validators.pattern(/.*[^\s].*/)]],
       language: ['en']
     });
   }
@@ -349,5 +412,45 @@ export class HomeComponent {
 
   onJoinGame() {
     this.showJoinForm = !this.showJoinForm;
+    this.errorMessage = '';
+  }
+
+  onJoinSubmit() {
+    if (this.joinForm.invalid) {
+      this.joinForm.markAllAsTouched();
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    const req = {
+      nickname: this.joinForm.value.nickname.trim(),
+      preferredLanguage: this.joinForm.value.language
+    };
+
+    const gameCode = this.joinForm.value.gameCode.trim().toUpperCase();
+
+    this.gameService.joinGame(gameCode, req).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        
+        // Update local state
+        this.playerState.updateState({
+          userId: res.userId,
+          nickname: req.nickname,
+          isHost: false,
+          gameCode: res.gameCode
+        });
+
+        // Navigate to lobby
+        this.router.navigate(['/lobby', res.gameCode]);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err.message || 'Failed to join game. Please log in with correct code.';
+        console.error('Join game error', err);
+      }
+    });
   }
 }
