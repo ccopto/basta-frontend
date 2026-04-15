@@ -67,8 +67,12 @@ import { PlayerStateService } from '../../services/player-state.service';
               <div class="divider"><span>OR</span></div>
               
               <button type="button" class="btn btn-secondary" (click)="onJoinGame()">
-                Join Game
+                Join Existing Game
               </button>
+            </div>
+            
+            <div *ngIf="showJoinForm" class="join-placeholder" style="margin-top: 1rem; text-align: center; color: var(--color-text-secondary); font-size: 0.9em;">
+              Join flow coming soon...
             </div>
 
             <div *ngIf="errorMessage" class="error-msg global-error">
@@ -287,6 +291,7 @@ export class HomeComponent {
   gameForm: FormGroup;
   isLoading = false;
   errorMessage = '';
+  showJoinForm = false;
 
   constructor(
     private fb: FormBuilder,
@@ -315,8 +320,8 @@ export class HomeComponent {
     const req = {
       hostNickname: this.gameForm.value.nickname,
       preferredLanguage: this.gameForm.value.language,
-      totalRounds: 5,
-      timerDuration: 60
+      totalRounds: GameService.DEFAULT_ROUNDS,
+      timerDuration: GameService.DEFAULT_TIMER
     };
 
     this.gameService.createGame(req).subscribe({
@@ -343,8 +348,6 @@ export class HomeComponent {
   }
 
   onJoinGame() {
-    // For joining, we will just navigate to a placeholder join screen 
-    // or toggle the form state in future user stories.
-    alert('Join Game functionality coming in the next user story!');
+    this.showJoinForm = !this.showJoinForm;
   }
 }
