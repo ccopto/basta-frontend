@@ -27,7 +27,7 @@ describe('Create Game (US-01 / US-03)', () => {
     }).as('createGame');
 
     // Clear session storage to start fresh
-    sessionStorage.clear();
+    cy.clearAllSessionStorage();
 
     // Type a valid nickname
     cy.get('input#nickname').clear().type('CypressUser');
