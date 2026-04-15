@@ -3,6 +3,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiService } from './api.service';
+import { JoinGameRequest, JoinGameResponse, PlayerDto, LobbySnapshot } from '../models/lobby.models';
 
 export interface CreateGameRequest {
   hostNickname: string;
@@ -16,32 +17,7 @@ export interface CreateGameResponse {
   hostUserId: number;
 }
 
-export interface JoinGameRequest {
-  nickname: string;
-  preferredLanguage: string;
-}
 
-export interface JoinGameResponse {
-  gameCode: string;
-  userId: number;
-}
-
-export interface PlayerDto {
-  userId: number;
-  nickname: string;
-  isHost: boolean;
-  isOnline: boolean;
-  totalScore: number;
-}
-
-export interface LobbySnapshot {
-  gameCode: string;
-  targetScore: number;
-  timerDuration: number;
-  language: string;
-  state: string;
-  players: PlayerDto[];
-}
 
 @Injectable({
   providedIn: 'root'
@@ -83,6 +59,6 @@ export class GameService {
       errorMessage = error.message;
     }
     
-    return throwError(() => new Error(errorMessage));
+    return throwError(() => ({ message: errorMessage, status: error.status }));
   }
 }
