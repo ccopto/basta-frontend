@@ -5,7 +5,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
-import { GameService, LobbySnapshot } from '../../services/game.service';
+import { GameService } from '../../services/game.service';
+import { LobbySnapshot } from '../../models/lobby.models';
 
 @Component({
   selector: 'app-lobby',
@@ -54,7 +55,7 @@ import { GameService, LobbySnapshot } from '../../services/game.service';
             </div>
             
             <!-- Empty slots -->
-            <div class="player-item empty-slot" *ngFor="let _ of getEmptySlots()">
+            <div class="player-item empty-slot" *ngFor="let _ of emptySlots">
               <div class="avatar empty-avatar">?</div>
               <div class="player-details"><span class="nickname">Waiting...</span></div>
             </div>
@@ -311,10 +312,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
   lobbyState: LobbySnapshot | null = null;
   errorMessage = '';
   isStarting = false;
+  emptySlots: null[] = Array(5).fill(null);
 
   private destroy$ = new Subject<void>();
   private receiveLobbyUpdateSub: Subject<LobbySnapshot> | null = null;
   private gameStartedSub: Subject<void> | null = null;
+  private registeredEvents: string[] = [];
 
   constructor(
     private playerState: PlayerStateService,
@@ -334,54 +337,51 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.currentUserId = state.userId;
     this.isHost = state.isHost;
 
-    this.connectToLobby();
+    this.connectToLobby().catch(err => {
+      this.errorMessage = 'Failed to connect to the live lobby. Please try rejoining.';
+      console.error(err);
+    });
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
     // SignalR events should be unregistered if we don't plan to reuse them
-    if (this.receiveLobbyUpdateSub) {
-      this.signalrService.off('ReceiveLobbyUpdate');
-    }
-    if (this.gameStartedSub) {
-      this.signalrService.off('GameStarted');
-    }
+    this.registeredEvents.forEach(e => this.signalrService.off(e));
+    this.registeredEvents = [];
   }
 
   private async connectToLobby() {
-    try {
-      // 1. Initial snapshot fetch to ensure we have data immediately
-      this.gameService.getGame(this.gameCode).pipe(takeUntil(this.destroy$)).subscribe({
-        next: (snapshot) => {
-          this.lobbyState = snapshot;
-        },
-        error: (err) => {
-          console.warn('Could not fetch initial lobby state', err);
-        }
-      });
-
-      // 2. Connect SignalR
-      await this.signalrService.startConnection();
-      
-      // 3. Register listeners
-      this.receiveLobbyUpdateSub = this.signalrService.on<LobbySnapshot>('ReceiveLobbyUpdate');
-      this.receiveLobbyUpdateSub.pipe(takeUntil(this.destroy$)).subscribe(snapshot => {
+    // 1. Initial snapshot fetch to ensure we have data immediately
+    this.gameService.getGame(this.gameCode).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (snapshot) => {
         this.lobbyState = snapshot;
-      });
+        this.emptySlots = Array(Math.max(0, 5 - snapshot.players.length)).fill(null);
+      },
+      error: (err) => {
+        console.warn('Could not fetch initial lobby state', err);
+      }
+    });
 
-      this.gameStartedSub = this.signalrService.on<void>('GameStarted');
-      this.gameStartedSub.pipe(takeUntil(this.destroy$)).subscribe(() => {
-        this.router.navigate(['/game', this.gameCode]);
-      });
+    // 2. Connect SignalR
+    await this.signalrService.startConnection();
+    
+    // 3. Register listeners
+    this.receiveLobbyUpdateSub = this.signalrService.on<LobbySnapshot>('ReceiveLobbyUpdate');
+    this.registeredEvents.push('ReceiveLobbyUpdate');
+    this.receiveLobbyUpdateSub.pipe(takeUntil(this.destroy$)).subscribe(snapshot => {
+      this.lobbyState = snapshot;
+      this.emptySlots = Array(Math.max(0, 5 - snapshot.players.length)).fill(null);
+    });
 
-      // 4. Join the group on HUB
-      await this.signalrService.invoke('JoinGame', this.gameCode, this.currentUserId, this.playerState.currentState.nickname);
-      
-    } catch (err) {
-      this.errorMessage = 'Failed to connect to the live lobby. Please try rejoining.';
-      console.error(err);
-    }
+    this.gameStartedSub = this.signalrService.on<void>('GameStarted');
+    this.registeredEvents.push('GameStarted');
+    this.gameStartedSub.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.router.navigate(['/game', this.gameCode]);
+    });
+
+    // 4. Join the group on HUB
+    await this.signalrService.invoke('JoinGame', this.gameCode, this.currentUserId, this.playerState.currentState.nickname);
   }
 
   async onStartGame() {
@@ -390,8 +390,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
     try {
       await this.signalrService.invoke('StartGame');
     } catch (err) {
-      this.isStarting = false;
       this.errorMessage = 'Failed to start game.';
+    } finally {
+      this.isStarting = false;
     }
   }
 
@@ -403,8 +404,5 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.router.navigate(['/home']);
   }
   
-  getEmptySlots(): any[] {
-    const count = this.lobbyState ? 5 - this.lobbyState.players.length : 0;
-    return Array(count > 0 ? count : 0).fill(0);
-  }
+
 }
