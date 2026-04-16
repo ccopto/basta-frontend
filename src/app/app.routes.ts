@@ -21,6 +21,7 @@ export const routes: Routes = [
   {
     path: 'setup/:code',
     loadComponent: () => import('./pages/game-setup/game-setup.component').then(m => m.GameSetupComponent),
+    canActivate: [import('./guards/setup.guard').then(m => m.setupGuard)],
     title: 'Basta! — Game Setup'
   },
   {

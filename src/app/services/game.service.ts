@@ -10,6 +10,7 @@ export interface CreateGameRequest {
   preferredLanguage: string;
   totalRounds: number;
   timerDuration: number;
+  categoryIds: number[];
 }
 
 export interface CreateGameResponse {
@@ -42,6 +43,12 @@ export class GameService {
 
   public getGame(gameCode: string): Observable<LobbySnapshot> {
     return this.api.get<LobbySnapshot>(`/games/${gameCode}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  public getCategories(lang: string = 'en'): Observable<import('../models/lobby.models').CategoryDto[]> {
+    return this.api.get<import('../models/lobby.models').CategoryDto[]>(`/categories?lang=${lang}`).pipe(
       catchError(this.handleError)
     );
   }
