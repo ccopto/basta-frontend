@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { lobbyGuard } from './guards/lobby.guard';
+import { setupGuard } from './guards/setup.guard';
 
 export const routes: Routes = [
   {
@@ -21,7 +22,7 @@ export const routes: Routes = [
   {
     path: 'setup/:code',
     loadComponent: () => import('./pages/game-setup/game-setup.component').then(m => m.GameSetupComponent),
-    canActivate: [import('./guards/setup.guard').then(m => m.setupGuard)],
+    canActivate: [setupGuard],
     title: 'Basta! — Game Setup'
   },
   {

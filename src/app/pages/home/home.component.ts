@@ -384,7 +384,8 @@ export class HomeComponent {
       hostNickname: this.gameForm.value.nickname,
       preferredLanguage: this.gameForm.value.language,
       totalRounds: GameService.DEFAULT_ROUNDS,
-      timerDuration: GameService.DEFAULT_TIMER
+      timerDuration: GameService.DEFAULT_TIMER,
+      categoryIds: [1] // Default category to satisfy API validation; host will reconfigure this on the setup page
     };
 
     this.gameService.createGame(req).subscribe({
