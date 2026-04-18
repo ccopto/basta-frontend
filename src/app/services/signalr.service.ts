@@ -29,11 +29,7 @@ export class SignalrService {
       return;
     }
 
-    this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`${environment.hubUrl}`)
-      .withAutomaticReconnect([0, 2000, 5000, 10000, 30000]) // Exponential backoff
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
+    this.hubConnection = this.buildConnection();
 
     this.registerConnectionEvents();
 
@@ -47,6 +43,18 @@ export class SignalrService {
       console.error('[SignalR] Connection failed:', err);
       throw err;
     }
+  }
+
+  /**
+   * Internal factory method for the hub connection.
+   * Overridden in tests to avoid HubConnectionBuilder dependency.
+   */
+  private buildConnection(): signalR.HubConnection {
+    return new signalR.HubConnectionBuilder()
+      .withUrl(`${environment.hubUrl}`)
+      .withAutomaticReconnect([0, 2000, 5000, 10000, 30000]) // Exponential backoff
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
   }
 
   /**
