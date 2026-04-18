@@ -1,0 +1,58 @@
+<div class="game-container page-container">
+  
+  <!-- Letter Reveal Overlay -->
+  <div class="letter-overlay" *ngIf="showLetterOverlay()">
+    <div class="letter-box">
+      <span class="reveal-label">Letter:</span>
+      <h1 class="reveal-letter">{{ currentLetter() }}</h1>
+    </div>
+  </div>
+
+  <!-- Game Header -->
+  <header class="game-header card glass">
+    <div class="header-main">
+      <div class="round-info">
+        <span class="label">Round</span>
+        <span class="value">{{ roundNumber() }}</span>
+      </div>
+      <div class="active-letter">
+        <span class="label">Letter</span>
+        <span class="value">{{ currentLetter() || '?' }}</span>
+      </div>
+    </div>
+
+    <div class="timer-section">
+      <div class="timer-bar-container">
+        <div class="timer-bar" [style.width.%]="timerProgress()"></div>
+      </div>
+      <span class="timer-text">{{ timeRemainingText() }}</span>
+    </div>
+  </header>
+
+  <!-- Answer Grid -->
+  <main class="answer-grid">
+    <div class="category-card card glass" *ngFor="let cat of categories()">
+      <label [for]="'cat-' + cat.categoryId">{{ cat.name }}</label>
+      <input 
+        [id]="'cat-' + cat.categoryId"
+        type="text" 
+        [(ngModel)]="answers[cat.categoryId]"
+        [placeholder]="'Starts with ' + currentLetter().toUpperCase()"
+        [disabled]="isLocked()"
+        autocomplete="off"
+      >
+    </div>
+  </main>
+
+  <!-- Action Button -->
+  <footer class="game-footer">
+    <button 
+      class="btn btn-primary btn-lg basta-btn" 
+      [disabled]="!isRoundRunning"
+      (click)="callBasta()"
+    >
+      BASTA!
+    </button>
+  </footer>
+
+</div>
