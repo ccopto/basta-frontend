@@ -63,8 +63,10 @@ export class GameComponent implements OnInit, OnDestroy {
     await this.signalrService.startConnection();
     
     // 4. Optimization: Only join if we haven't already (prevents spurious broadcasts)
-    // The SignalrService handles joining, but we want to ensure idempotent component initialization
-    await this.signalrService.invoke('JoinGame', this.gameCode, state.userId, state.nickname);
+    if (this.signalrService.currentGameCode !== this.gameCode) {
+      await this.signalrService.invoke('JoinGame', this.gameCode, state.userId, state.nickname);
+      this.signalrService.currentGameCode = this.gameCode;
+    }
   }
 
   ngOnDestroy() {
