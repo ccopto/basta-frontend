@@ -1,3 +1,16 @@
+export interface CreateGameRequest {
+  hostNickname: string;
+  preferredLanguage: string;
+  totalRounds: number;
+  timerDuration: number;
+  categoryIds: number[];
+}
+
+export interface CreateGameResponse {
+  gameCode: string;
+  hostUserId: number;
+}
+
 export interface JoinGameRequest {
   nickname: string;
   preferredLanguage: string;
