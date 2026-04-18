@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -61,7 +61,10 @@ export class GameComponent implements OnInit, OnDestroy {
 
     // 3. Connect (session should already be active or will be on RoundStarted)
     await this.signalrService.startConnection();
-    await this.signalrService.invoke('JoinGame', this.gameCode);
+    
+    // 4. Optimization: Only join if we haven't already (prevents spurious broadcasts)
+    // The SignalrService handles joining, but we want to ensure idempotent component initialization
+    await this.signalrService.invoke('JoinGame', this.gameCode, state.userId, state.nickname);
   }
 
   ngOnDestroy() {
@@ -70,14 +73,24 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   private loadCategories(selectedIds: number[]) {
-    // We assume the user's preferred language or the game language. 
-    // For simplicity, we fetch 'en' or from state if we added it there.
-    this.gameService.getCategories().subscribe(allCats => {
-      const filtered = allCats.filter(c => selectedIds.includes(c.categoryId));
-      this.categories.set(filtered);
-      // Initialize answer map
-      filtered.forEach(c => this.answers[c.categoryId] = '');
-    });
+    if (selectedIds && selectedIds.length > 0) {
+      this.gameService.getCategories().subscribe(allCats => {
+        const filtered = allCats.filter(c => selectedIds.includes(c.categoryId));
+        this.categories.set(filtered);
+        filtered.forEach(c => this.answers[c.categoryId] = '');
+      });
+    } else {
+      // Fallback: If not in local state (joined player), fetch from server snapshot
+      this.gameService.getGame(this.gameCode).subscribe(game => {
+        if (game && game.selectedCategoryIds) {
+          this.gameService.getCategories().subscribe(allCats => {
+            const filtered = allCats.filter(c => game.selectedCategoryIds.includes(c.categoryId));
+            this.categories.set(filtered);
+            filtered.forEach(c => this.answers[c.categoryId] = '');
+          });
+        }
+      });
+    }
   }
 
   private setupSignalR() {
