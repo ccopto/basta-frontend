@@ -3,22 +3,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiService } from './api.service';
-import { JoinGameRequest, JoinGameResponse, PlayerDto, LobbySnapshot } from '../models/lobby.models';
-
-export interface CreateGameRequest {
-  hostNickname: string;
-  preferredLanguage: string;
-  totalRounds: number;
-  timerDuration: number;
-  categoryIds: number[];
-}
-
-export interface CreateGameResponse {
-  gameCode: string;
-  hostUserId: number;
-}
-
-
+import { CreateGameRequest, CreateGameResponse, JoinGameRequest, JoinGameResponse, PlayerDto, LobbySnapshot } from '../models/lobby.models';
 
 @Injectable({
   providedIn: 'root'
