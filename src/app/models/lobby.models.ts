@@ -24,3 +24,8 @@ export interface LobbySnapshot {
   state: string;
   players: PlayerDto[];
 }
+
+export interface CategoryDto {
+  categoryId: number;
+  name: string;
+}

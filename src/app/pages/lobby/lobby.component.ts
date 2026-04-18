@@ -65,9 +65,9 @@ import { LobbySnapshot } from '../../models/lobby.models';
         <footer class="lobby-actions" *ngIf="lobbyState">
           <div *ngIf="isHost" class="host-controls">
             <button class="btn btn-primary btn-block" 
-                    [disabled]="lobbyState.players.length < 2 || isStarting" 
-                    (click)="onStartGame()">
-              {{ isStarting ? 'Starting...' : 'Start Game' }}
+                    [disabled]="lobbyState.players.length < 2" 
+                    (click)="onConfigureGame()">
+              Configure Game
             </button>
             <p class="hint" *ngIf="lobbyState.players.length < 2">Need at least 2 players to start</p>
           </div>
@@ -384,16 +384,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
     await this.signalrService.invoke('JoinGame', this.gameCode, this.currentUserId, this.playerState.currentState.nickname);
   }
 
-  async onStartGame() {
+  onConfigureGame() {
     if (!this.isHost) return;
-    this.isStarting = true;
-    try {
-      await this.signalrService.invoke('StartGame');
-    } catch (err) {
-      this.errorMessage = 'Failed to start game.';
-    } finally {
-      this.isStarting = false;
-    }
+    this.router.navigate(['/setup', this.gameCode]);
   }
 
   onLeaveLobby() {
