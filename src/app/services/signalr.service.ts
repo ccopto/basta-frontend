@@ -18,6 +18,9 @@ export class SignalrService {
   private connectionStateSubject = new BehaviorSubject<ConnectionState>('disconnected');
   public connectionState$ = this.connectionStateSubject.asObservable();
 
+  /** Tracks the currently joined game group to prevent redundant JoinGame calls. */
+  public currentGameCode: string | null = null;
+
   /**
    * Build and start the SignalR connection to the Basta hub.
    */

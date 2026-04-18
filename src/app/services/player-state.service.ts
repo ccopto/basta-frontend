@@ -6,6 +6,7 @@ export interface PlayerState {
   nickname: string;
   isHost: boolean;
   gameCode: string | null;
+  selectedCategoryIds: number[];
 }
 
 @Injectable({
@@ -19,7 +20,8 @@ export class PlayerStateService {
       userId: null,
       nickname: '',
       isHost: false,
-      gameCode: null
+      gameCode: null,
+      selectedCategoryIds: []
     };
   }
 
