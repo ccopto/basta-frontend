@@ -1,3 +1,4 @@
+import { Routes } from '@angular/router';
 import { lobbyGuard } from './guards/lobby.guard';
 import { setupGuard } from './guards/setup.guard';
 import { gameGuard } from './guards/game.guard';
