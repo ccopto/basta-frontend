@@ -1,12 +1,14 @@
 <div class="game-container page-container">
   
   <!-- Letter Reveal Overlay -->
-  <div class="letter-overlay" *ngIf="showLetterOverlay()">
-    <div class="letter-box">
-      <span class="reveal-label">Letter:</span>
-      <h1 class="reveal-letter">{{ currentLetter() }}</h1>
+  @if (showLetterOverlay()) {
+    <div class="letter-overlay">
+      <div class="letter-box">
+        <span class="reveal-label">Letter:</span>
+        <h1 class="reveal-letter">{{ currentLetter() }}</h1>
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Game Header -->
   <header class="game-header card glass">
@@ -31,17 +33,19 @@
 
   <!-- Answer Grid -->
   <main class="answer-grid">
-    <div class="category-card card glass" *ngFor="let cat of categories()">
-      <label [for]="'cat-' + cat.categoryId">{{ cat.name }}</label>
-      <input 
-        [id]="'cat-' + cat.categoryId"
-        type="text" 
-        [(ngModel)]="answers[cat.categoryId]"
-        [placeholder]="'Starts with ' + currentLetter().toUpperCase()"
-        [disabled]="isLocked()"
-        autocomplete="off"
-      >
-    </div>
+    @for (cat of categories(); track cat.categoryId) {
+      <div class="category-card card glass">
+        <label [for]="'cat-' + cat.categoryId">{{ cat.name }}</label>
+        <input 
+          [id]="'cat-' + cat.categoryId"
+          type="text" 
+          [(ngModel)]="answers[cat.categoryId]"
+          [placeholder]="'Starts with ' + currentLetter().toUpperCase()"
+          [disabled]="isLocked()"
+          autocomplete="off"
+        >
+      </div>
+    }
   </main>
 
   <!-- Action Button -->
