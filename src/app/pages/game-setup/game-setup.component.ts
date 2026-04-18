@@ -354,6 +354,9 @@ export class GameSetupComponent implements OnInit, OnDestroy {
       const catArray = Array.from(this.selectedCategoryIds);
       await this.signalrService.invoke('SetCategories', catArray);
       
+      // 1.1 Save locally to state for fast navigation
+      this.playerState.updateState({ selectedCategoryIds: catArray });
+      
       // 2. Start game
       await this.signalrService.invoke('StartGame');
     } catch (err: any) {

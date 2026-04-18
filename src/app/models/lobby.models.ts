@@ -23,6 +23,7 @@ export interface LobbySnapshot {
   language: string;
   state: string;
   players: PlayerDto[];
+  selectedCategoryIds: number[];
 }
 
 export interface CategoryDto {
