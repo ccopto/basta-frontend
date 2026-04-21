@@ -189,7 +189,7 @@ export class GameComponent implements OnInit, OnDestroy {
   public async callBasta() {
     if (!this.roundActive() || this.isLocked()) return;
     try {
-      await this.signalrService.invoke('CallBasta', this.gameCode);
+      await this.signalrService.invoke('CallBasta');
     } catch (err) {
       console.error('Failed to call Basta!', err);
     }
@@ -197,7 +197,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   private async submitAnswers() {
     try {
-      await this.signalrService.invoke('SubmitAnswers', this.gameCode, this.answers);
+      await this.signalrService.invoke('SubmitAnswers', this.answers);
     } catch (err) {
       console.error('Failed to submit answers', err);
     }
