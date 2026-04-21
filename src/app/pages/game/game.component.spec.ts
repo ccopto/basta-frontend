@@ -120,6 +120,7 @@ describe('GameComponent', () => {
 
     expect(component.isRoundRunning).toBeFalse();
     expect(component.isLocked()).toBeTrue();
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('SubmitAnswers', jasmine.any(Object));
   }));
 
   it('should call invoke Basta on callBasta()', fakeAsync(() => {
@@ -127,6 +128,7 @@ describe('GameComponent', () => {
     component.isLocked.set(false);
     
     component.callBasta();
-    expect(mockSignalr.invoke).toHaveBeenCalledWith('CallBasta', 'ABCD');
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('CallBasta');
   }));
 });
+
