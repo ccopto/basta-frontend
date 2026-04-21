@@ -107,30 +107,30 @@ describe('GameSetupComponent', () => {
 
   it('should update rounds within range', () => {
     // Default is 5 (from mockGameService.getGame)
-    expect(component.totalRounds).toBe(5);
+    expect(component.totalRounds()).toBe(5);
     
     component.updateRounds(1); // Increment
-    expect(component.totalRounds).toBe(6);
+    expect(component.totalRounds()).toBe(6);
     
     component.updateRounds(-1); // Decrement
-    expect(component.totalRounds).toBe(5);
+    expect(component.totalRounds()).toBe(5);
   });
 
   it('should update timer within range', () => {
     // Default is 60
-    expect(component.timerDuration).toBe(60);
+    expect(component.timerDuration()).toBe(60);
     
     component.updateTimer(30); // Increment
-    expect(component.timerDuration).toBe(90);
+    expect(component.timerDuration()).toBe(90);
     
     component.updateTimer(-30); // Decrement
-    expect(component.timerDuration).toBe(60);
+    expect(component.timerDuration()).toBe(60);
   });
 
-  it('should call SetGameSettings when starting game', fakeAsync(() => {
+  it('should call UpdateGameSettings with custom rounds and timer when starting game', fakeAsync(() => {
     component.toggleCategory(1);
-    component.totalRounds = 10;
-    component.timerDuration = 45;
+    component.totalRounds.set(10);
+    component.timerDuration.set(45);
     
     component.onStartGame();
     tick();
@@ -138,4 +138,5 @@ describe('GameSetupComponent', () => {
     expect(mockSignalr.invoke).toHaveBeenCalledWith('UpdateGameSettings', 10, 45, [1]);
     expect(mockSignalr.invoke).toHaveBeenCalledWith('StartGame');
   }));
+
 });

@@ -1,12 +1,14 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, switchMap, tap } from 'rxjs/operators';
 import { GameService } from '../../services/game.service';
 import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
 import { CategoryDto, LobbySnapshot } from '../../models/lobby.models';
+import { GAME_DEFAULTS } from '../../constants/game.constants';
+
 
 @Component({
   selector: 'app-game-setup',
@@ -36,26 +38,27 @@ import { CategoryDto, LobbySnapshot } from '../../models/lobby.models';
             <div class="setting-item animate-fade-in" style="animation-delay: 100ms">
               <label>Total Rounds</label>
               <div class="stepper">
-                <button type="button" class="step-btn" (click)="updateRounds(-1)" [disabled]="totalRounds <= 1">−</button>
+                <button type="button" class="step-btn" (click)="updateRounds(-1)" [disabled]="totalRounds() <= GAME_DEFAULTS.minRounds">−</button>
                 <div class="step-value-container">
-                  <span class="step-value">{{ totalRounds }}</span>
+                  <span class="step-value">{{ totalRounds() }}</span>
                   <span class="step-unit">rounds</span>
                 </div>
-                <button type="button" class="step-btn" (click)="updateRounds(1)" [disabled]="totalRounds >= 20">+</button>
+                <button type="button" class="step-btn" (click)="updateRounds(1)" [disabled]="totalRounds() >= GAME_DEFAULTS.maxRounds">+</button>
               </div>
             </div>
             
             <div class="setting-item animate-fade-in" style="animation-delay: 200ms">
               <label>Round Timer</label>
               <div class="stepper">
-                <button type="button" class="step-btn" (click)="updateTimer(-15)" [disabled]="timerDuration <= 30">−</button>
+                <button type="button" class="step-btn" (click)="updateTimer(-15)" [disabled]="timerDuration() <= GAME_DEFAULTS.minTimer">−</button>
                 <div class="step-value-container">
-                  <span class="step-value">{{ timerDuration }}</span>
+                  <span class="step-value">{{ timerDuration() }}</span>
                   <span class="step-unit">sec</span>
                 </div>
-                <button type="button" class="step-btn" (click)="updateTimer(15)" [disabled]="timerDuration >= 120">+</button>
+                <button type="button" class="step-btn" (click)="updateTimer(15)" [disabled]="timerDuration() >= GAME_DEFAULTS.maxTimer">+</button>
               </div>
             </div>
+
           </div>
 
           <!-- Categories -->
@@ -326,16 +329,21 @@ import { CategoryDto, LobbySnapshot } from '../../models/lobby.models';
   `]
 })
 export class GameSetupComponent implements OnInit, OnDestroy {
+  readonly GAME_DEFAULTS = GAME_DEFAULTS;
   gameCode = '';
+
   lobbyState: LobbySnapshot | null = null;
   availableCategories: CategoryDto[] = [];
   selectedCategoryIds = new Set<number>();
-  totalRounds = 5;
-  timerDuration = 60;
+  
+  // FE-1: Use Signals for interactive state to benefit from fine-grained change detection
+  totalRounds = signal<number>(GAME_DEFAULTS.totalRounds);
+  timerDuration = signal<number>(GAME_DEFAULTS.timerDuration);
   
   loading = true;
   isStarting = false;
   errorMessage = '';
+
 
   private destroy$ = new Subject<void>();
   private gameStartedSub: Subject<void> | null = null;
@@ -377,26 +385,27 @@ export class GameSetupComponent implements OnInit, OnDestroy {
 
   private loadData() {
     this.loading = true;
-    
     const lang = 'en'; // Hardcoded till language selection in Epic 5
     
-    this.gameService.getGame(this.gameCode).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (snapshot) => {
+    // FE-2: Refactor using switchMap to avoid nested subscribes anti-pattern
+    this.gameService.getGame(this.gameCode).pipe(
+      tap((snapshot) => {
         this.lobbyState = snapshot;
-        this.totalRounds = snapshot.targetScore; // Map backend targetScore to local totalRounds
-        this.timerDuration = snapshot.timerDuration;
-        
-        this.gameService.getCategories(lang).pipe(takeUntil(this.destroy$)).subscribe({
-          next: (cats) => {
-            this.availableCategories = cats;
-            this.loading = false;
-          },
-          error: () => this.handleError('Failed to load categories.')
-        });
+        // FE-5: Map backend 'targetScore' (which tracks winning condition/rounds) to local 'totalRounds' signal
+        this.totalRounds.set(snapshot.targetScore);
+        this.timerDuration.set(snapshot.timerDuration);
+      }),
+      switchMap(() => this.gameService.getCategories(lang)),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (cats) => {
+        this.availableCategories = cats;
+        this.loading = false;
       },
-      error: () => this.handleError('Failed to load game config.')
+      error: () => this.handleError('Failed to load configuration.')
     });
   }
+
 
   private registerSignalR() {
     this.gameStartedSub = this.signalrService.on<void>('GameStarted');
@@ -414,18 +423,19 @@ export class GameSetupComponent implements OnInit, OnDestroy {
   }
 
   updateRounds(delta: number) {
-    const newVal = this.totalRounds + delta;
-    if (newVal >= 1 && newVal <= 20) {
-      this.totalRounds = newVal;
+    const newVal = this.totalRounds() + delta;
+    if (newVal >= GAME_DEFAULTS.minRounds && newVal <= GAME_DEFAULTS.maxRounds) {
+      this.totalRounds.set(newVal);
     }
   }
 
   updateTimer(delta: number) {
-    const newVal = this.timerDuration + delta;
-    if (newVal >= 30 && newVal <= 120) {
-      this.timerDuration = newVal;
+    const newVal = this.timerDuration() + delta;
+    if (newVal >= GAME_DEFAULTS.minTimer && newVal <= GAME_DEFAULTS.maxTimer) {
+      this.timerDuration.set(newVal);
     }
   }
+
 
   onBack() {
     this.router.navigate(['/lobby', this.gameCode]);
@@ -440,18 +450,21 @@ export class GameSetupComponent implements OnInit, OnDestroy {
     try {
       // 1. Sync all settings to server
       const catArray = Array.from(this.selectedCategoryIds);
-      await this.signalrService.invoke('UpdateGameSettings', this.totalRounds, this.timerDuration, catArray);
+      await this.signalrService.invoke('UpdateGameSettings', this.totalRounds(), this.timerDuration(), catArray);
       
       // 1.1 Save locally to state for fast navigation
       this.playerState.updateState({ 
         selectedCategoryIds: catArray,
-        totalRounds: this.totalRounds,
-        timerDuration: this.timerDuration
+        totalRounds: this.totalRounds(),
+        timerDuration: this.timerDuration()
       });
       
       // 2. Start game
       await this.signalrService.invoke('StartGame');
+      // FE-3: Reset isStarting on success path to avoid stuck button if navigation is delayed
+      this.isStarting = false;
     } catch (err: any) {
+
       this.errorMessage = err.message || 'Failed to start the game.';
       this.isStarting = false;
     }
