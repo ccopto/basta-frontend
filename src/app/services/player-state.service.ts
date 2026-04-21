@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { GAME_DEFAULTS } from '../constants/game.constants';
 
 export interface PlayerState {
   userId: number | null;
@@ -7,6 +8,8 @@ export interface PlayerState {
   isHost: boolean;
   gameCode: string | null;
   selectedCategoryIds: number[];
+  totalRounds: number;
+  timerDuration: number;
 }
 
 @Injectable({
@@ -21,9 +24,12 @@ export class PlayerStateService {
       nickname: '',
       isHost: false,
       gameCode: null,
-      selectedCategoryIds: []
+      selectedCategoryIds: [],
+      totalRounds: GAME_DEFAULTS.totalRounds,
+      timerDuration: GAME_DEFAULTS.timerDuration
     };
   }
+
 
   private stateSubject = new BehaviorSubject<PlayerState>(this.loadState());
   public state$ = this.stateSubject.asObservable();

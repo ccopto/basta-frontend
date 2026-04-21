@@ -26,7 +26,7 @@ describe('GameSetupComponent', () => {
 
     mockGameService.getGame.and.returnValue(of({
       gameCode: 'ABCD',
-      targetScore: 50,
+      targetScore: 5,
       timerDuration: 60
     } as any));
 
@@ -76,15 +76,20 @@ describe('GameSetupComponent', () => {
     expect(component.selectedCategoryIds.has(1)).toBeFalse();
   });
 
-  it('should invoke SetCategories and StartGame on success', fakeAsync(() => {
+  it('should invoke UpdateGameSettings and StartGame on success', fakeAsync(() => {
     component.toggleCategory(2);
     component.onStartGame();
     tick();
 
-    expect(mockSignalr.invoke).toHaveBeenCalledWith('SetCategories', [2]);
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('UpdateGameSettings', 5, 60, [2]);
     expect(mockSignalr.invoke).toHaveBeenCalledWith('StartGame');
-    expect(mockPlayerState.updateState).toHaveBeenCalledWith({ selectedCategoryIds: [2] });
+    expect(mockPlayerState.updateState).toHaveBeenCalledWith({ 
+      selectedCategoryIds: [2],
+      totalRounds: 5,
+      timerDuration: 60
+    });
   }));
+
 
   it('should navigate away when GameStarted received', waitForAsync(async () => {
     fixture.detectChanges();
@@ -99,4 +104,39 @@ describe('GameSetupComponent', () => {
     
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/game', 'ABCD']);
   }));
+
+  it('should update rounds within range', () => {
+    // Default is 5 (from mockGameService.getGame)
+    expect(component.totalRounds()).toBe(5);
+    
+    component.updateRounds(1); // Increment
+    expect(component.totalRounds()).toBe(6);
+    
+    component.updateRounds(-1); // Decrement
+    expect(component.totalRounds()).toBe(5);
+  });
+
+  it('should update timer within range', () => {
+    // Default is 60
+    expect(component.timerDuration()).toBe(60);
+    
+    component.updateTimer(30); // Increment
+    expect(component.timerDuration()).toBe(90);
+    
+    component.updateTimer(-30); // Decrement
+    expect(component.timerDuration()).toBe(60);
+  });
+
+  it('should call UpdateGameSettings with custom rounds and timer when starting game', fakeAsync(() => {
+    component.toggleCategory(1);
+    component.totalRounds.set(10);
+    component.timerDuration.set(45);
+    
+    component.onStartGame();
+    tick();
+
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('UpdateGameSettings', 10, 45, [1]);
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('StartGame');
+  }));
+
 });
