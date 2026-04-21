@@ -7,6 +7,8 @@ export interface PlayerState {
   isHost: boolean;
   gameCode: string | null;
   selectedCategoryIds: number[];
+  totalRounds: number;
+  timerDuration: number;
 }
 
 @Injectable({
@@ -21,7 +23,9 @@ export class PlayerStateService {
       nickname: '',
       isHost: false,
       gameCode: null,
-      selectedCategoryIds: []
+      selectedCategoryIds: [],
+      totalRounds: 5,
+      timerDuration: 60
     };
   }
 

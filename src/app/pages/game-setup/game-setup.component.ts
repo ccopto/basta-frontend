@@ -31,15 +31,30 @@ import { CategoryDto, LobbySnapshot } from '../../models/lobby.models';
         </div>
 
         <form class="setup-form" *ngIf="!loading && lobbyState">
-          <!-- Readonly Settings -->
+          <!-- Interactive Settings -->
           <div class="settings-grid">
-            <div class="setting-item">
-              <label>Target Score (Rounds)</label>
-              <div class="readonly-value">{{ lobbyState.targetScore }} pts</div>
+            <div class="setting-item animate-fade-in" style="animation-delay: 100ms">
+              <label>Total Rounds</label>
+              <div class="stepper">
+                <button type="button" class="step-btn" (click)="updateRounds(-1)" [disabled]="totalRounds <= 1">−</button>
+                <div class="step-value-container">
+                  <span class="step-value">{{ totalRounds }}</span>
+                  <span class="step-unit">rounds</span>
+                </div>
+                <button type="button" class="step-btn" (click)="updateRounds(1)" [disabled]="totalRounds >= 20">+</button>
+              </div>
             </div>
-            <div class="setting-item">
-              <label>Timer Duration</label>
-              <div class="readonly-value">{{ lobbyState.timerDuration }} sec</div>
+            
+            <div class="setting-item animate-fade-in" style="animation-delay: 200ms">
+              <label>Round Timer</label>
+              <div class="stepper">
+                <button type="button" class="step-btn" (click)="updateTimer(-15)" [disabled]="timerDuration <= 30">−</button>
+                <div class="step-value-container">
+                  <span class="step-value">{{ timerDuration }}</span>
+                  <span class="step-unit">sec</span>
+                </div>
+                <button type="button" class="step-btn" (click)="updateTimer(15)" [disabled]="timerDuration >= 120">+</button>
+              </div>
             </div>
           </div>
 
@@ -147,13 +162,68 @@ import { CategoryDto, LobbySnapshot } from '../../models/lobby.models';
       font-size: var(--font-size-xs);
       font-weight: 600;
       text-transform: uppercase;
-      margin-bottom: var(--space-xs);
+      margin-bottom: var(--space-sm);
     }
 
-    .readonly-value {
-      font-size: 1.5rem;
-      font-weight: 700;
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-sm);
+      padding: var(--space-xs);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .step-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-base);
+    }
+
+    .step-btn:hover:not(:disabled) {
+      background: rgba(var(--color-primary-rgb), 0.2);
+      border-color: var(--color-primary);
+      transform: scale(1.05);
+    }
+
+    .step-btn:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    .step-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .step-value-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .step-value {
+      font-size: 1.75rem;
+      font-weight: 800;
       color: var(--color-accent);
+      line-height: 1;
+    }
+
+    .step-unit {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      font-weight: 700;
+      letter-spacing: 0.05em;
     }
 
     .categories-group label {
@@ -260,6 +330,8 @@ export class GameSetupComponent implements OnInit, OnDestroy {
   lobbyState: LobbySnapshot | null = null;
   availableCategories: CategoryDto[] = [];
   selectedCategoryIds = new Set<number>();
+  totalRounds = 5;
+  timerDuration = 60;
   
   loading = true;
   isStarting = false;
@@ -311,6 +383,8 @@ export class GameSetupComponent implements OnInit, OnDestroy {
     this.gameService.getGame(this.gameCode).pipe(takeUntil(this.destroy$)).subscribe({
       next: (snapshot) => {
         this.lobbyState = snapshot;
+        this.totalRounds = snapshot.targetScore; // Map backend targetScore to local totalRounds
+        this.timerDuration = snapshot.timerDuration;
         
         this.gameService.getCategories(lang).pipe(takeUntil(this.destroy$)).subscribe({
           next: (cats) => {
@@ -339,6 +413,20 @@ export class GameSetupComponent implements OnInit, OnDestroy {
     }
   }
 
+  updateRounds(delta: number) {
+    const newVal = this.totalRounds + delta;
+    if (newVal >= 1 && newVal <= 20) {
+      this.totalRounds = newVal;
+    }
+  }
+
+  updateTimer(delta: number) {
+    const newVal = this.timerDuration + delta;
+    if (newVal >= 30 && newVal <= 120) {
+      this.timerDuration = newVal;
+    }
+  }
+
   onBack() {
     this.router.navigate(['/lobby', this.gameCode]);
   }
@@ -350,12 +438,16 @@ export class GameSetupComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     
     try {
-      // 1. Send categories to server
+      // 1. Sync all settings to server
       const catArray = Array.from(this.selectedCategoryIds);
-      await this.signalrService.invoke('SetCategories', catArray);
+      await this.signalrService.invoke('UpdateGameSettings', this.totalRounds, this.timerDuration, catArray);
       
       // 1.1 Save locally to state for fast navigation
-      this.playerState.updateState({ selectedCategoryIds: catArray });
+      this.playerState.updateState({ 
+        selectedCategoryIds: catArray,
+        totalRounds: this.totalRounds,
+        timerDuration: this.timerDuration
+      });
       
       // 2. Start game
       await this.signalrService.invoke('StartGame');
