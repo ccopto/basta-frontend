@@ -7,14 +7,17 @@ import { PlayerStateService } from '../../services/player-state.service';
 import { GameService } from '../../services/game.service';
 import { RoundStartedEvent, RoundStoppedEvent, AnswerMap } from '../../models/game.models';
 import { CategoryDto } from '../../models/lobby.models';
-import { Subscription, interval } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { LetterDisplayComponent } from './letter-display/letter-display.component';
+import { CountdownTimerComponent } from './countdown-timer/countdown-timer.component';
+import { AnswerGridComponent } from './answer-grid/answer-grid.component';
 
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LetterDisplayComponent, CountdownTimerComponent, AnswerGridComponent],
   templateUrl: './game.component.html',
-  styleUrls: ['./game.component.css']
+  styleUrl: './game.component.css'
 })
 export class GameComponent implements OnInit, OnDestroy {
   // --- Game State Signals ---
@@ -22,8 +25,10 @@ export class GameComponent implements OnInit, OnDestroy {
   public currentLetter = signal<string>('');
   public roundActive = signal<boolean>(false);
   public isLocked = signal<boolean>(false);
-  public timerProgress = signal<number>(100); // 0 to 100 for the bar
-  public timeRemainingText = signal<string>('00:00');
+  public timerProgress = signal<number>(100);
+  public serverTime = signal<string>('');
+  public timerDuration = signal<number>(60);
+  public gameOverReason = signal<string | null>(null);
   
   // --- Answer Grid State ---
   public categories = signal<CategoryDto[]>([]);
@@ -38,7 +43,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
+
     private signalrService: SignalrService,
     private playerState: PlayerStateService,
     private gameService: GameService
@@ -70,7 +76,6 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.stopTimer();
     this.subscriptions.forEach(s => s.unsubscribe());
   }
 
@@ -109,6 +114,13 @@ export class GameComponent implements OnInit, OnDestroy {
         this.handleRoundStopped(event);
       })
     );
+
+    // Listen for Game Over
+    this.subscriptions.push(
+      this.signalrService.on<string>('GameOver').subscribe((reason) => {
+        this.handleGameOver(reason);
+      })
+    );
   }
 
   private handleRoundStarted(event: RoundStartedEvent) {
@@ -121,24 +133,17 @@ export class GameComponent implements OnInit, OnDestroy {
     this.showLetterOverlay.set(true);
     setTimeout(() => this.showLetterOverlay.set(false), 2500);
 
-    // Set initial timer state immediately to avoid flicker
-    const mins = Math.floor(event.timerDuration / 60);
-    const secs = event.timerDuration % 60;
-    this.timeRemainingText.set(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
-    this.timerProgress.set(100);
-
     // Start Timer with Server Sync
-    this.startSyncedTimer(event.serverTime, event.timerDuration);
+    this.serverTime.set(event.serverTime);
+    this.timerDuration.set(event.timerDuration);
   }
 
   private async handleRoundStopped(event: RoundStoppedEvent) {
     this.roundActive.set(false);
     this.isLocked.set(true);
-    this.stopTimer();
 
     // Reset progress on stop
     this.timerProgress.set(0);
-    this.timeRemainingText.set('00:00');
 
     // Auto-submit answers immediately
     await this.submitAnswers();
@@ -148,42 +153,23 @@ export class GameComponent implements OnInit, OnDestroy {
     console.log(`Round stopped by ${event.callerNickname}. Answers submitted.`);
   }
 
-  private startSyncedTimer(serverTimeIso: string, durationSec: number) {
-    this.stopTimer();
-    
-    const startTime = new Date(serverTimeIso).getTime();
-    const endTime = startTime + (durationSec * 1000);
-
-    // Initial sync call
-    this.updateTimer(endTime, durationSec);
-
-    this.timerSubscription = interval(100).subscribe(() => {
-      this.updateTimer(endTime, durationSec);
-    });
+  private handleGameOver(reason: string) {
+    this.roundActive.set(false);
+    this.isLocked.set(true);
+    this.gameOverReason.set(reason);
   }
 
-  private updateTimer(endTime: number, durationSec: number) {
-    const now = Date.now();
-    const remainingMs = Math.max(0, endTime - now);
-    const remainingSec = Math.ceil(remainingMs / 1000);
-    
-    const progress = (remainingMs / (durationSec * 1000)) * 100;
-    this.timerProgress.set(progress);
-    
-    const mins = Math.floor(remainingSec / 60);
-    const secs = remainingSec % 60;
-    this.timeRemainingText.set(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
 
-    if (remainingMs <= 0) {
-      this.stopTimer();
+  public onAnswersChanged(updatedAnswers: AnswerMap) {
+    this.answers = updatedAnswers;
+  }
+
+  public onTimerExpired() {
+    if (this.roundActive() && !this.isLocked()) {
       this.roundActive.set(false);
       this.isLocked.set(true);
       this.submitAnswers();
     }
-  }
-
-  private stopTimer() {
-    this.timerSubscription?.unsubscribe();
   }
 
   public async callBasta() {
