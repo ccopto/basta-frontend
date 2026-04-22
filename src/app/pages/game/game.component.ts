@@ -9,14 +9,29 @@ import { RoundStartedEvent, RoundStoppedEvent, AnswerMap } from '../../models/ga
 import { CategoryDto } from '../../models/lobby.models';
 import { Subscription } from 'rxjs';
 import { LetterDisplayComponent } from './letter-display/letter-display.component';
+
 import { CountdownTimerComponent } from './countdown-timer/countdown-timer.component';
 import { AnswerGridComponent } from './answer-grid/answer-grid.component';
+import { ValidationGridComponent } from './validation-grid/validation-grid.component';
+import { RoundResultsComponent } from './round-results/round-results.component';
+
+import { ScoringData, PlayerScore } from '../../models/game.models';
+
 
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [CommonModule, FormsModule, LetterDisplayComponent, CountdownTimerComponent, AnswerGridComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    LetterDisplayComponent, 
+    CountdownTimerComponent, 
+    AnswerGridComponent,
+    ValidationGridComponent,
+    RoundResultsComponent
+  ],
   templateUrl: './game.component.html',
+
   styleUrl: './game.component.css'
 })
 export class GameComponent implements OnInit, OnDestroy {
@@ -29,6 +44,12 @@ export class GameComponent implements OnInit, OnDestroy {
   public serverTime = signal<string>('');
   public timerDuration = signal<number>(60);
   public gameOverReason = signal<string | null>(null);
+  public currentPhase = signal<'playing' | 'validating' | 'results'>('playing');
+  
+  // --- Phase Data Signals ---
+  public scoringData = signal<ScoringData | null>(null);
+  public roundScores = signal<PlayerScore[]>([]);
+
   
   // --- Answer Grid State ---
   public categories = signal<CategoryDto[]>([]);
@@ -46,8 +67,9 @@ export class GameComponent implements OnInit, OnDestroy {
     public router: Router,
 
     private signalrService: SignalrService,
-    private playerState: PlayerStateService,
+    public playerState: PlayerStateService,
     private gameService: GameService
+
   ) {}
 
   async ngOnInit() {
@@ -121,7 +143,24 @@ export class GameComponent implements OnInit, OnDestroy {
         this.handleGameOver(reason);
       })
     );
+
+    // Listen for Validation Phase
+    this.subscriptions.push(
+      this.signalrService.on<ScoringData>('DisplayScoring').subscribe((data) => {
+        this.scoringData.set(data);
+        this.currentPhase.set('validating');
+      })
+    );
+
+    // Listen for Results Phase
+    this.subscriptions.push(
+      this.signalrService.on<PlayerScore[]>('ReceiveGameScore').subscribe((scores) => {
+        this.roundScores.set(scores);
+        this.currentPhase.set('results');
+      })
+    );
   }
+
 
   private handleRoundStarted(event: RoundStartedEvent) {
     this.roundNumber.set(event.roundNumber);
@@ -136,7 +175,13 @@ export class GameComponent implements OnInit, OnDestroy {
     // Start Timer with Server Sync
     this.serverTime.set(event.serverTime);
     this.timerDuration.set(event.timerDuration);
+
+    // Ensure we are in playing phase
+    this.currentPhase.set('playing');
+    this.scoringData.set(null);
+    this.roundScores.set([]);
   }
+
 
   private async handleRoundStopped(event: RoundStoppedEvent) {
     this.roundActive.set(false);
@@ -192,4 +237,21 @@ export class GameComponent implements OnInit, OnDestroy {
   public get isRoundRunning(): boolean {
     return this.roundActive() && !this.isLocked();
   }
+
+  public async onValidationSubmitted(validations: { [categoryId: number]: boolean }) {
+    try {
+      await this.signalrService.submitValidation(validations);
+    } catch (err) {
+      console.error('Failed to submit validation', err);
+    }
+  }
+
+  public async startNextRound() {
+    try {
+      await this.signalrService.invoke('StartRound');
+    } catch (err) {
+      console.error('Failed to start next round', err);
+    }
+  }
 }
+
