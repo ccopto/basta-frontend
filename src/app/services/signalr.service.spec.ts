@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { NgZone } from '@angular/core';
 import { SignalrService } from './signalr.service';
 import * as signalR from '@microsoft/signalr';
 
@@ -48,5 +49,28 @@ describe('SignalrService', () => {
     await service.stopConnection();
     expect(mockHubConnection.stop).toHaveBeenCalled();
     expect(service.currentGameCode).toBeNull();
+  });
+  it('should emit received events inside NgZone', async () => {
+    let emittedInsideZone = false;
+    const zone = TestBed.inject(NgZone);
+    
+    // Setup listener
+    await service.startConnection();
+    const eventSubject = service.on<string>('TestEvent');
+    
+    // Capture the callback registered with SignalR
+    const onSpy = mockHubConnection.on as jasmine.Spy;
+    const callback = onSpy.calls.argsFor(0)[1];
+    
+    eventSubject.subscribe(() => {
+      emittedInsideZone = NgZone.isInAngularZone();
+    });
+    
+    // Simulate SignalR event firing OUTSIDE the zone (mocking library behavior)
+    zone.runOutsideAngular(() => {
+      callback('test data');
+    });
+    
+    expect(emittedInsideZone).toBeTrue();
   });
 });

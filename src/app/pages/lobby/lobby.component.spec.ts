@@ -4,7 +4,7 @@ import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
 import { GameService } from '../../services/game.service';
 import { Router } from '@angular/router';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 describe('LobbyComponent', () => {
   let component: LobbyComponent;
@@ -98,4 +98,17 @@ describe('LobbyComponent', () => {
     expect(mockSignalr.off).toHaveBeenCalledWith('Ev1');
     expect(mockSignalr.off).toHaveBeenCalledWith('Ev2');
   });
+  it('should display error message when getGame fails', fakeAsync(() => {
+    // Override the mock for this test
+    mockGameService.getGame.and.returnValue(throwError(() => ({ message: 'API Error' })));
+    
+    // Re-initialize component to trigger ngOnInit with the new mock
+    fixture = TestBed.createComponent(LobbyComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    tick();
+    
+    expect(component.errorMessage).toBe('Could not fetch initial lobby state. Please try refreshing.');
+    expect(component.lobbyState).toBeNull();
+  }));
 });
