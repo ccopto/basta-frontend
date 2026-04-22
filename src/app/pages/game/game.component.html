@@ -1,14 +1,10 @@
 <div class="game-container page-container">
   
-  <!-- Letter Reveal Overlay -->
-  @if (showLetterOverlay()) {
-    <div class="letter-overlay">
-      <div class="letter-box">
-        <span class="reveal-label">Letter:</span>
-        <h1 class="reveal-letter">{{ currentLetter() }}</h1>
-      </div>
-    </div>
-  }
+  <!-- Letter Overlay & Display -->
+  <app-letter-display 
+    [letter]="currentLetter()" 
+    [showOverlay]="showLetterOverlay()">
+  </app-letter-display>
 
   <!-- Game Header -->
   <header class="game-header card glass">
@@ -17,36 +13,24 @@
         <span class="label">Round</span>
         <span class="value">{{ roundNumber() }}</span>
       </div>
-      <div class="active-letter">
-        <span class="label">Letter</span>
-        <span class="value">{{ currentLetter() || '?' }}</span>
-      </div>
-    </div>
-
-    <div class="timer-section">
-      <div class="timer-bar-container">
-        <div class="timer-bar" [style.width.%]="timerProgress()"></div>
-      </div>
-      <span class="timer-text">{{ timeRemainingText() }}</span>
+      
+      <!-- Countdown Timer -->
+      <app-countdown-timer
+        [serverTime]="serverTime()"
+        [durationSec]="timerDuration()"
+        [isLocked]="isLocked()"
+        (expired)="onTimerExpired()">
+      </app-countdown-timer>
     </div>
   </header>
 
   <!-- Answer Grid -->
-  <main class="answer-grid">
-    @for (cat of categories(); track cat.categoryId) {
-      <div class="category-card card glass">
-        <label [for]="'cat-' + cat.categoryId">{{ cat.name }}</label>
-        <input 
-          [id]="'cat-' + cat.categoryId"
-          type="text" 
-          [(ngModel)]="answers[cat.categoryId]"
-          [placeholder]="'Starts with ' + currentLetter().toUpperCase()"
-          [disabled]="isLocked()"
-          autocomplete="off"
-        >
-      </div>
-    }
-  </main>
+  <app-answer-grid
+    [categories]="categories()"
+    [currentLetter]="currentLetter()"
+    [isLocked]="isLocked()"
+    (answersChanged)="onAnswersChanged($event)">
+  </app-answer-grid>
 
   <!-- Action Button -->
   <footer class="game-footer">
@@ -60,3 +44,4 @@
   </footer>
 
 </div>
+
