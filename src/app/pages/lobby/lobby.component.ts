@@ -360,6 +360,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.warn('Could not fetch initial lobby state', err);
+        this.errorMessage = 'Could not fetch initial lobby state. Please try refreshing.';
       }
     });
 

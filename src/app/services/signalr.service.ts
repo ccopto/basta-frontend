@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Subject, BehaviorSubject } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../environments/environment';
@@ -20,6 +20,8 @@ export class SignalrService {
 
   /** Tracks the currently joined game group to prevent redundant JoinGame calls. */
   public currentGameCode: string | null = null;
+
+  constructor(private zone: NgZone) {}
 
   /**
    * Build and start the SignalR connection to the Basta hub.
@@ -95,7 +97,9 @@ export class SignalrService {
     const subject = new Subject<T>();
     if (this.hubConnection) {
       this.hubConnection.on(eventName, (data: T) => {
-        subject.next(data);
+        this.zone.run(() => {
+          subject.next(data);
+        });
       });
     }
     return subject;
@@ -127,18 +131,24 @@ export class SignalrService {
     if (!this.hubConnection) return;
 
     this.hubConnection.onreconnecting(() => {
-      this.connectionStateSubject.next('reconnecting');
-      console.warn('[SignalR] Reconnecting...');
+      this.zone.run(() => {
+        this.connectionStateSubject.next('reconnecting');
+        console.warn('[SignalR] Reconnecting...');
+      });
     });
 
     this.hubConnection.onreconnected(() => {
-      this.connectionStateSubject.next('connected');
-      console.log('[SignalR] Reconnected.');
+      this.zone.run(() => {
+        this.connectionStateSubject.next('connected');
+        console.log('[SignalR] Reconnected.');
+      });
     });
 
     this.hubConnection.onclose(() => {
-      this.connectionStateSubject.next('disconnected');
-      console.warn('[SignalR] Connection closed.');
+      this.zone.run(() => {
+        this.connectionStateSubject.next('disconnected');
+        console.warn('[SignalR] Connection closed.');
+      });
     });
   }
 }
