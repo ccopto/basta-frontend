@@ -1,6 +1,8 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
+import { Subscription } from 'rxjs';
+
 import { AnswerMap } from '../../../models/game.models';
 import { CategoryDto } from '../../../models/lobby.models';
 
@@ -66,7 +68,7 @@ import { CategoryDto } from '../../../models/lobby.models';
     }
   `]
 })
-export class AnswerGridComponent implements OnChanges {
+export class AnswerGridComponent implements OnChanges, OnDestroy {
   @Input() categories: CategoryDto[] = [];
   @Input() currentLetter: string = '';
   @Input() isLocked: boolean = false;
@@ -74,6 +76,7 @@ export class AnswerGridComponent implements OnChanges {
   @Output() answersChanged = new EventEmitter<AnswerMap>();
 
   public form: FormGroup = new FormGroup({});
+  private formValueSub?: Subscription;
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['categories']) {
@@ -85,16 +88,22 @@ export class AnswerGridComponent implements OnChanges {
   }
 
   private initForm() {
+    this.formValueSub?.unsubscribe();
     const group: any = {};
     this.categories.forEach(cat => {
       group[cat.categoryId.toString()] = new FormControl('');
     });
     this.form = new FormGroup(group);
     
-    this.form.valueChanges.subscribe(val => {
+    this.formValueSub = this.form.valueChanges.subscribe(val => {
       this.answersChanged.emit(val as AnswerMap);
     });
   }
+
+  ngOnDestroy() {
+    this.formValueSub?.unsubscribe();
+  }
+
 
   private toggleLock() {
     if (this.isLocked) {

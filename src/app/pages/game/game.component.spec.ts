@@ -116,15 +116,20 @@ describe('GameComponent', () => {
   }));
 
   it('should handle GameOver event', fakeAsync(() => {
-    spyOn(window, 'alert');
     gameOverSubject.next('No more letters');
     tick();
     fixture.detectChanges();
 
     expect(component.isRoundRunning).toBeFalse();
     expect(component.isLocked()).toBeTrue();
-    expect(window.alert).toHaveBeenCalledWith('Game Over: No more letters');
+    expect(component.gameOverReason()).toBe('No more letters');
+    
+    const overlay = fixture.nativeElement.querySelector('.game-over-overlay');
+    expect(overlay).toBeTruthy();
+    expect(overlay.textContent).toContain('Game Over');
+    expect(overlay.textContent).toContain('No more letters');
   }));
+
 
   it('should call invoke CallBasta on callBasta()', fakeAsync(() => {
     component.roundActive.set(true);

@@ -28,6 +28,7 @@ export class GameComponent implements OnInit, OnDestroy {
   public timerProgress = signal<number>(100);
   public serverTime = signal<string>('');
   public timerDuration = signal<number>(60);
+  public gameOverReason = signal<string | null>(null);
   
   // --- Answer Grid State ---
   public categories = signal<CategoryDto[]>([]);
@@ -42,7 +43,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
+
     private signalrService: SignalrService,
     private playerState: PlayerStateService,
     private gameService: GameService
@@ -154,9 +156,9 @@ export class GameComponent implements OnInit, OnDestroy {
   private handleGameOver(reason: string) {
     this.roundActive.set(false);
     this.isLocked.set(true);
-    alert(`Game Over: ${reason}`);
-    // Future: navigate to summary
+    this.gameOverReason.set(reason);
   }
+
 
   public onAnswersChanged(updatedAnswers: AnswerMap) {
     this.answers = updatedAnswers;
