@@ -9,6 +9,10 @@ import { FormsModule } from '@angular/forms';
 import { LetterDisplayComponent } from './letter-display/letter-display.component';
 import { CountdownTimerComponent } from './countdown-timer/countdown-timer.component';
 import { AnswerGridComponent } from './answer-grid/answer-grid.component';
+import { ValidationGridComponent } from './validation-grid/validation-grid.component';
+import { RoundResultsComponent } from './round-results/round-results.component';
+
+
 
 describe('GameComponent', () => {
   let component: GameComponent;
@@ -21,14 +25,17 @@ describe('GameComponent', () => {
   const roundStoppedSubject = new Subject<any>();
   const lobbyUpdateSubject = new Subject<any>();
   const gameOverSubject = new Subject<string>();
+  const displayScoringSubject = new Subject<any>();
+  const receiveGameScoreSubject = new Subject<any>();
 
   beforeEach(async () => {
     mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off'], {
         currentGameCode: null
     });
     mockPlayerState = jasmine.createSpyObj('PlayerStateService', [], {
-      currentState: { gameCode: 'ABCD', nickname: 'Nick', userId: 1, selectedCategoryIds: [1] }
+      currentState: { gameCode: 'ABCD', nickname: 'Nick', userId: 1, selectedCategoryIds: [1], hostUserId: 1 }
     });
+
     mockGameService = jasmine.createSpyObj('GameService', ['getGame', 'getCategories']);
     mockGameService.getCategories.and.returnValue(of([{ categoryId: 1, name: 'Name' }]));
     mockGameService.getGame.and.returnValue(of({ selectedCategoryIds: [1] } as any));
@@ -38,6 +45,8 @@ describe('GameComponent', () => {
       if (event === 'RoundStopped') return roundStoppedSubject;
       if (event === 'ReceiveLobbyUpdate') return lobbyUpdateSubject;
       if (event === 'GameOver') return gameOverSubject;
+      if (event === 'DisplayScoring') return displayScoringSubject;
+      if (event === 'ReceiveGameScore') return receiveGameScoreSubject;
       return new Subject<any>();
     }) as any);
 
@@ -46,7 +55,16 @@ describe('GameComponent', () => {
     mockSignalr.invoke.and.returnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
-      imports: [GameComponent, FormsModule, LetterDisplayComponent, CountdownTimerComponent, AnswerGridComponent],
+      imports: [
+        GameComponent, 
+        FormsModule, 
+        LetterDisplayComponent, 
+        CountdownTimerComponent, 
+        AnswerGridComponent,
+        ValidationGridComponent,
+        RoundResultsComponent
+      ],
+
       providers: [
         { provide: SignalrService, useValue: mockSignalr },
         { provide: PlayerStateService, useValue: mockPlayerState },
@@ -137,5 +155,31 @@ describe('GameComponent', () => {
     
     component.callBasta();
     expect(mockSignalr.invoke).toHaveBeenCalledWith('CallBasta');
+  }));
+
+  it('should transition to validating phase when DisplayScoring event is received', fakeAsync(() => {
+    const mockScoringData = { players: [] };
+    displayScoringSubject.next(mockScoringData);
+    tick();
+    fixture.detectChanges();
+
+    expect(component.currentPhase()).toBe('validating');
+    expect(component.scoringData()).toBe(mockScoringData as any);
+  }));
+
+  it('should transition to results phase when ReceiveGameScore event is received', fakeAsync(() => {
+    const mockScores = [{ userId: 1, nickname: 'Nick', roundScore: 10, totalScore: 10, answers: [] }];
+    receiveGameScoreSubject.next(mockScores);
+    tick();
+    fixture.detectChanges();
+
+    expect(component.currentPhase()).toBe('results');
+    expect(component.roundScores()).toBe(mockScores as any);
+  }));
+
+  it('should call StartRound on startNextRound()', fakeAsync(() => {
+    component.startNextRound();
+    tick();
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('StartRound');
   }));
 });

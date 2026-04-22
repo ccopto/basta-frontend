@@ -19,9 +19,10 @@ describe('LobbyComponent', () => {
 
   beforeEach(async () => {
     mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off', 'stopConnection']);
-    mockPlayerState = jasmine.createSpyObj('PlayerStateService', ['clearState'], {
-      currentState: { gameCode: 'ABCD', nickname: 'Host', userId: 1, isHost: true }
+    mockPlayerState = jasmine.createSpyObj('PlayerStateService', ['clearState', 'updateState'], {
+      currentState: { gameCode: 'ABCD', nickname: 'Host', userId: 1, isHost: true, hostUserId: 1 }
     });
+
     mockGameService = jasmine.createSpyObj('GameService', ['getGame']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 

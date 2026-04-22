@@ -397,7 +397,8 @@ export class HomeComponent {
           userId: res.hostUserId,
           nickname: req.hostNickname.trim(),
           isHost: true,
-          gameCode: res.gameCode
+          gameCode: res.gameCode,
+          hostUserId: res.hostUserId
         });
 
         // Navigate to lobby
@@ -409,6 +410,7 @@ export class HomeComponent {
         console.error('Create game error', err);
       }
     });
+
   }
 
   onJoinGame() {

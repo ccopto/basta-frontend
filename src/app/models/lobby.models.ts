@@ -37,7 +37,9 @@ export interface LobbySnapshot {
   state: string;
   players: PlayerDto[];
   selectedCategoryIds: number[];
+  hostUserId: number;
 }
+
 
 export interface CategoryDto {
   categoryId: number;

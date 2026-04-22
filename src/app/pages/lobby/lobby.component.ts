@@ -372,7 +372,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.receiveLobbyUpdateSub.pipe(takeUntil(this.destroy$)).subscribe(snapshot => {
       this.lobbyState = snapshot;
       this.emptySlots = Array(Math.max(0, 5 - snapshot.players.length)).fill(null);
+      this.playerState.updateState({ hostUserId: snapshot.hostUserId });
     });
+
 
     this.gameStartedSub = this.signalrService.on<void>('GameStarted');
     this.registeredEvents.push('GameStarted');

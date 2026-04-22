@@ -10,7 +10,9 @@ export interface PlayerState {
   selectedCategoryIds: number[];
   totalRounds: number;
   timerDuration: number;
+  hostUserId: number | null;
 }
+
 
 @Injectable({
   providedIn: 'root'
@@ -26,8 +28,10 @@ export class PlayerStateService {
       gameCode: null,
       selectedCategoryIds: [],
       totalRounds: GAME_DEFAULTS.totalRounds,
-      timerDuration: GAME_DEFAULTS.timerDuration
+      timerDuration: GAME_DEFAULTS.timerDuration,
+      hostUserId: null
     };
+
   }
 
 

@@ -12,3 +12,31 @@ export interface RoundStoppedEvent {
 export interface AnswerMap {
   [categoryId: number]: string;
 }
+
+export interface PlayerAnswers {
+  userId: number;
+  nickname: string;
+  answers: AnswerMap;
+}
+
+export interface ScoringData {
+  players: PlayerAnswers[];
+}
+
+
+export interface AnswerScore {
+  categoryId: number;
+  answer: string;
+  isValid: boolean;
+  points: number;
+  isUnique: boolean;
+}
+
+export interface PlayerScore {
+  userId: number;
+  nickname: string;
+  roundScore: number;
+  cumulativeScore: number;
+  answers: AnswerScore[];
+}
+

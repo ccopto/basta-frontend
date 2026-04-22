@@ -34,24 +34,53 @@
     </div>
   </header>
 
-  <!-- Answer Grid -->
-  <app-answer-grid
-    [categories]="categories()"
-    [currentLetter]="currentLetter()"
-    [isLocked]="isLocked()"
-    (answersChanged)="onAnswersChanged($event)">
-  </app-answer-grid>
+  <!-- Main Content Phase Switch -->
+  <main class="game-main">
+    @switch (currentPhase()) {
+      @case ('playing') {
+        <app-answer-grid
+          [categories]="categories()"
+          [currentLetter]="currentLetter()"
+          [isLocked]="isLocked()"
+          (answersChanged)="onAnswersChanged($event)">
+        </app-answer-grid>
+      }
+      @case ('validating') {
+        @if (scoringData()) {
+          <app-validation-grid
+            [scoringData]="scoringData()!"
+            [categories]="categories()"
+            [currentUserId]="playerState.currentState.userId!"
+            [isSubmitting]="isSubmittingValidation()"
+            (onValidated)="onValidationSubmitted($event)">
+          </app-validation-grid>
+        }
+      }
+      @case ('results') {
+        <app-round-results
+          [scores]="roundScores()"
+          [categories]="categories()"
+          [currentUserId]="playerState.currentState.userId!"
+          [isHost]="playerState.currentState.userId === playerState.currentState.hostUserId"
+          (onNextRound)="startNextRound()">
+        </app-round-results>
+      }
+    }
+  </main>
 
-  <!-- Action Button -->
-  <footer class="game-footer">
-    <button 
-      class="btn btn-primary btn-lg basta-btn" 
-      [disabled]="!isRoundRunning"
-      (click)="callBasta()"
-    >
-      BASTA!
-    </button>
-  </footer>
+  <!-- Action Button (Only in playing phase) -->
+  @if (currentPhase() === 'playing') {
+    <footer class="game-footer">
+      <button 
+        class="btn btn-primary btn-lg basta-btn" 
+        [disabled]="!isRoundRunning"
+        (click)="callBasta()"
+      >
+        BASTA!
+      </button>
+    </footer>
+  }
+
 
 </div>
 

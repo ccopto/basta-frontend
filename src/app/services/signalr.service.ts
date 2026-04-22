@@ -112,6 +112,15 @@ export class SignalrService {
   }
 
   /**
+   * Submits self-validation results for the current round.
+   * @param validations Dictionary of categoryId -> IsValid boolean.
+   */
+  async submitValidation(validations: { [categoryId: number]: boolean }): Promise<void> {
+    return this.invoke('SubmitValidation', validations);
+  }
+
+
+  /**
    * Register internal connection lifecycle events.
    */
   private registerConnectionEvents(): void {
