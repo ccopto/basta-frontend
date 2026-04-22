@@ -9,6 +9,10 @@ import { FormsModule } from '@angular/forms';
 import { LetterDisplayComponent } from './letter-display/letter-display.component';
 import { CountdownTimerComponent } from './countdown-timer/countdown-timer.component';
 import { AnswerGridComponent } from './answer-grid/answer-grid.component';
+import { ValidationGridComponent } from './validation-grid/validation-grid.component';
+import { RoundResultsComponent } from './round-results/round-results.component';
+
+
 
 describe('GameComponent', () => {
   let component: GameComponent;
@@ -27,8 +31,9 @@ describe('GameComponent', () => {
         currentGameCode: null
     });
     mockPlayerState = jasmine.createSpyObj('PlayerStateService', [], {
-      currentState: { gameCode: 'ABCD', nickname: 'Nick', userId: 1, selectedCategoryIds: [1] }
+      currentState: { gameCode: 'ABCD', nickname: 'Nick', userId: 1, selectedCategoryIds: [1], hostUserId: 1 }
     });
+
     mockGameService = jasmine.createSpyObj('GameService', ['getGame', 'getCategories']);
     mockGameService.getCategories.and.returnValue(of([{ categoryId: 1, name: 'Name' }]));
     mockGameService.getGame.and.returnValue(of({ selectedCategoryIds: [1] } as any));
@@ -46,7 +51,16 @@ describe('GameComponent', () => {
     mockSignalr.invoke.and.returnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
-      imports: [GameComponent, FormsModule, LetterDisplayComponent, CountdownTimerComponent, AnswerGridComponent],
+      imports: [
+        GameComponent, 
+        FormsModule, 
+        LetterDisplayComponent, 
+        CountdownTimerComponent, 
+        AnswerGridComponent,
+        ValidationGridComponent,
+        RoundResultsComponent
+      ],
+
       providers: [
         { provide: SignalrService, useValue: mockSignalr },
         { provide: PlayerStateService, useValue: mockPlayerState },
