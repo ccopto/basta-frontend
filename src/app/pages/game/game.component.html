@@ -51,6 +51,7 @@
             [scoringData]="scoringData()!"
             [categories]="categories()"
             [currentUserId]="playerState.currentState.userId!"
+            [isSubmitting]="isSubmittingValidation()"
             (onValidated)="onValidationSubmitted($event)">
           </app-validation-grid>
         }
@@ -68,15 +69,17 @@
   </main>
 
   <!-- Action Button (Only in playing phase) -->
-  <footer class="game-footer" *ngIf="currentPhase() === 'playing'">
-    <button 
-      class="btn btn-primary btn-lg basta-btn" 
-      [disabled]="!isRoundRunning"
-      (click)="callBasta()"
-    >
-      BASTA!
-    </button>
-  </footer>
+  @if (currentPhase() === 'playing') {
+    <footer class="game-footer">
+      <button 
+        class="btn btn-primary btn-lg basta-btn" 
+        [disabled]="!isRoundRunning"
+        (click)="callBasta()"
+      >
+        BASTA!
+      </button>
+    </footer>
+  }
 
 
 </div>

@@ -49,6 +49,7 @@ export class GameComponent implements OnInit, OnDestroy {
   // --- Phase Data Signals ---
   public scoringData = signal<ScoringData | null>(null);
   public roundScores = signal<PlayerScore[]>([]);
+  public isSubmittingValidation = signal<boolean>(false);
 
   
   // --- Answer Grid State ---
@@ -240,9 +241,11 @@ export class GameComponent implements OnInit, OnDestroy {
 
   public async onValidationSubmitted(validations: { [categoryId: number]: boolean }) {
     try {
+      this.isSubmittingValidation.set(true);
       await this.signalrService.submitValidation(validations);
     } catch (err) {
       console.error('Failed to submit validation', err);
+      this.isSubmittingValidation.set(false);
     }
   }
 

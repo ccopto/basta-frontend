@@ -25,6 +25,8 @@ describe('GameComponent', () => {
   const roundStoppedSubject = new Subject<any>();
   const lobbyUpdateSubject = new Subject<any>();
   const gameOverSubject = new Subject<string>();
+  const displayScoringSubject = new Subject<any>();
+  const receiveGameScoreSubject = new Subject<any>();
 
   beforeEach(async () => {
     mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off'], {
@@ -43,6 +45,8 @@ describe('GameComponent', () => {
       if (event === 'RoundStopped') return roundStoppedSubject;
       if (event === 'ReceiveLobbyUpdate') return lobbyUpdateSubject;
       if (event === 'GameOver') return gameOverSubject;
+      if (event === 'DisplayScoring') return displayScoringSubject;
+      if (event === 'ReceiveGameScore') return receiveGameScoreSubject;
       return new Subject<any>();
     }) as any);
 
@@ -151,5 +155,31 @@ describe('GameComponent', () => {
     
     component.callBasta();
     expect(mockSignalr.invoke).toHaveBeenCalledWith('CallBasta');
+  }));
+
+  it('should transition to validating phase when DisplayScoring event is received', fakeAsync(() => {
+    const mockScoringData = { players: [] };
+    displayScoringSubject.next(mockScoringData);
+    tick();
+    fixture.detectChanges();
+
+    expect(component.currentPhase()).toBe('validating');
+    expect(component.scoringData()).toBe(mockScoringData as any);
+  }));
+
+  it('should transition to results phase when ReceiveGameScore event is received', fakeAsync(() => {
+    const mockScores = [{ userId: 1, nickname: 'Nick', roundScore: 10, totalScore: 10, answers: [] }];
+    receiveGameScoreSubject.next(mockScores);
+    tick();
+    fixture.detectChanges();
+
+    expect(component.currentPhase()).toBe('results');
+    expect(component.roundScores()).toBe(mockScores as any);
+  }));
+
+  it('should call StartRound on startNextRound()', fakeAsync(() => {
+    component.startNextRound();
+    tick();
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('StartRound');
   }));
 });

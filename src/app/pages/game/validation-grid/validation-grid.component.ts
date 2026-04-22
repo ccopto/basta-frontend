@@ -173,11 +173,11 @@ export class ValidationGridComponent implements OnInit {
   @Input() scoringData!: ScoringData;
   @Input() categories: CategoryDto[] = [];
   @Input() currentUserId: number = 0;
+  @Input() isSubmitting: boolean = false;
   
   @Output() onValidated = new EventEmitter<{ [categoryId: number]: boolean }>();
 
   public validations: { [categoryId: number]: boolean } = {};
-  public isSubmitting = false;
 
   ngOnInit() {
     // Initialize all my answers as valid by default (honesty policy starts here!)
@@ -191,7 +191,6 @@ export class ValidationGridComponent implements OnInit {
   }
 
   submit() {
-    this.isSubmitting = true;
     this.onValidated.emit(this.validations);
   }
 }

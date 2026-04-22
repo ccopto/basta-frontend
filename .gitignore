@@ -46,3 +46,7 @@ Thumbs.db
 .env.*
 infra/certs/
 AGENTS.md
+
+# Temporary output
+*.txt
+test_output.txt
