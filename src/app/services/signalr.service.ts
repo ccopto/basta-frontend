@@ -21,6 +21,9 @@ export class SignalrService {
   /** Tracks the currently joined game group to prevent redundant JoinGame calls. */
   public currentGameCode: string | null = null;
 
+  /** Registry of Subjects per event name to ensure stability and multi-consumer support. */
+  private readonly _eventSubjects = new Map<string, Subject<any>>();
+
   constructor(private zone: NgZone) {}
 
   /**
@@ -66,6 +69,7 @@ export class SignalrService {
     if (this.hubConnection) {
       await this.hubConnection.stop();
       this.hubConnection = null;
+      this._eventSubjects.clear();
       this.connectionStateSubject.next('disconnected');
       console.log('[SignalR] Disconnected.');
     }
@@ -85,16 +89,18 @@ export class SignalrService {
 
   /**
    * Subscribe to a server-to-client event.
-   * Returns a Subject that emits whenever the server broadcasts the given event.
-   * Note: This assumes a single-consumer model. If multiple components listen to the 
-   * same event simultaneously, registering a new handler will unregister the old one.
+   * Returns a stable Subject that emits whenever the server broadcasts the given event.
+   * Multiple calls for the same eventName will return the same Subject instance.
    * @param eventName The name of the SignalR event to listen for.
    */
   on<T>(eventName: string): Subject<T> {
-    // Remove any previous handler to avoid duplicates (single-consumer assumption)
-    this.hubConnection?.off(eventName);
+    if (!this._eventSubjects.has(eventName)) {
+      this._eventSubjects.set(eventName, new Subject<any>());
+    }
+    const subject = this._eventSubjects.get(eventName)!;
 
-    const subject = new Subject<T>();
+    // Remove any previous handler to avoid duplicates, then register the shared one
+    this.hubConnection?.off(eventName);
     if (this.hubConnection) {
       this.hubConnection.on(eventName, (data: T) => {
         this.zone.run(() => {
