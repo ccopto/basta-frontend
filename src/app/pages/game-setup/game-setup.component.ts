@@ -391,8 +391,8 @@ export class GameSetupComponent implements OnInit, OnDestroy {
     this.gameService.getGame(this.gameCode).pipe(
       tap((snapshot) => {
         this.lobbyState = snapshot;
-        // FE-5: Map backend 'targetScore' (which tracks winning condition/rounds) to local 'totalRounds' signal
-        this.totalRounds.set(snapshot.targetScore);
+        // FE-5: Map backend 'totalRounds' (which tracks winning condition/rounds) to local 'totalRounds' signal
+        this.totalRounds.set(snapshot.totalRounds);
         this.timerDuration.set(snapshot.timerDuration);
       }),
       switchMap(() => this.gameService.getCategories(lang)),
