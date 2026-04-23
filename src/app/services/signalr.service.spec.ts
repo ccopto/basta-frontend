@@ -73,4 +73,31 @@ describe('SignalrService', () => {
     
     expect(emittedInsideZone).toBeTrue();
   });
+
+  it('should return the same Subject on repeated on() calls for the same event', async () => {
+    await service.startConnection();
+    const s1 = service.on<string>('Foo');
+    const s2 = service.on<string>('Foo');
+    expect(s1).toBe(s2);
+  });
+
+  it('should not lose subscribers when on() is called again for the same event', async () => {
+    let receivedValue = '';
+    
+    await service.startConnection();
+    const s1 = service.on<string>('Foo');
+    
+    s1.subscribe(val => receivedValue = val);
+    
+    // Call on() again - in the current buggy implementation, this orphans s1
+    service.on<string>('Foo');
+    
+    // Capture the callback registered with SignalR
+    const onSpy = mockHubConnection.on as jasmine.Spy;
+    const callback = onSpy.calls.mostRecent().args[1];
+    
+    callback('test data');
+    
+    expect(receivedValue).toBe('test data');
+  });
 });
