@@ -18,7 +18,7 @@ import { LobbySnapshot } from '../../models/lobby.models';
         <header class="lobby-header">
           <div class="header-tags">
             <span class="tag lang-tag">{{ lobbyState?.language === 'es' ? 'Español' : 'English' }}</span>
-            <span class="tag rounds-tag" *ngIf="lobbyState">🎯 Score: {{ lobbyState.targetScore }}</span>
+            <span class="tag rounds-tag" *ngIf="lobbyState">🎯 {{ lobbyState.totalRounds }} Rounds</span>
           </div>
           <h1 class="game-code">{{ gameCode }}</h1>
           <p class="subtitle" *ngIf="lobbyState">
@@ -357,6 +357,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
       next: (snapshot) => {
         this.lobbyState = snapshot;
         this.emptySlots = Array(Math.max(0, 5 - snapshot.players.length)).fill(null);
+        this.playerState.updateState({ hostUserId: snapshot.hostUserId });
       },
       error: (err) => {
         console.warn('Could not fetch initial lobby state', err);
@@ -372,6 +373,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.registeredEvents.push('ReceiveLobbyUpdate');
     this.receiveLobbyUpdateSub.pipe(takeUntil(this.destroy$)).subscribe(snapshot => {
       this.lobbyState = snapshot;
+      this.errorMessage = '';
       this.emptySlots = Array(Math.max(0, 5 - snapshot.players.length)).fill(null);
       this.playerState.updateState({ hostUserId: snapshot.hostUserId });
     });
