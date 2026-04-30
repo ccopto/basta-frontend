@@ -395,17 +395,21 @@ export class GameSetupComponent implements OnInit, OnDestroy {
         this.totalRounds.set(snapshot.totalRounds);
         this.timerDuration.set(snapshot.timerDuration);
       }),
-      switchMap(() => this.gameService.getCategories(lang)),
+      switchMap(() => {
+        return this.gameService.getCategories(lang);
+      }),
       takeUntil(this.destroy$)
     ).subscribe({
       next: (cats) => {
         this.availableCategories = cats;
         this.loading = false;
       },
-      error: () => this.handleError('Failed to load configuration.')
+      error: (err) => {
+        console.error('[Setup] Error loading config:', err);
+        this.handleError('Failed to load configuration.');
+      }
     });
   }
-
 
   private registerSignalR() {
     this.gameStartedSub = this.signalrService.on<void>('GameStarted');
@@ -464,7 +468,6 @@ export class GameSetupComponent implements OnInit, OnDestroy {
       // FE-3: Reset isStarting on success path to avoid stuck button if navigation is delayed
       this.isStarting = false;
     } catch (err: any) {
-
       this.errorMessage = err.message || 'Failed to start the game.';
       this.isStarting = false;
     }
