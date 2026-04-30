@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Subject, BehaviorSubject } from 'rxjs';
+import { Subject, BehaviorSubject, ReplaySubject } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../environments/environment';
 
@@ -40,9 +40,10 @@ export class SignalrService {
 
     try {
       this.connectionStateSubject.next('connecting');
+      console.log('[SignalR] Attempting to start connection to:', environment.hubUrl);
       await this.hubConnection.start();
       this.connectionStateSubject.next('connected');
-      console.log('[SignalR] Connected successfully.');
+      console.log('[SignalR] Connection started successfully.');
     } catch (err) {
       this.connectionStateSubject.next('disconnected');
       console.error('[SignalR] Connection failed:', err);
@@ -80,11 +81,20 @@ export class SignalrService {
    * @param methodName The name of the hub method to call.
    * @param args Arguments to pass to the hub method.
    */
-  async invoke<T = void>(methodName: string, ...args: unknown[]): Promise<T> {
+   async invoke<T = void>(methodName: string, ...args: unknown[]): Promise<T> {
     if (!this.hubConnection) {
+      console.error('[SignalR] Invoke failed: No active connection.', { methodName, args });
       throw new Error('[SignalR] No active connection. Call startConnection() first.');
     }
-    return this.hubConnection.invoke<T>(methodName, ...args);
+    console.log(`[SignalR] Invoking: ${methodName}`, args);
+    try {
+      const result = await this.hubConnection.invoke<T>(methodName, ...args);
+      console.log(`[SignalR] Invoke ${methodName} SUCCESS`, result);
+      return result;
+    } catch (err) {
+      console.error(`[SignalR] Invoke ${methodName} FAILED:`, err);
+      throw err;
+    }
   }
 
   /**
@@ -95,7 +105,7 @@ export class SignalrService {
    */
   on<T>(eventName: string): Subject<T> {
     if (!this._eventSubjects.has(eventName)) {
-      this._eventSubjects.set(eventName, new Subject<any>());
+      this._eventSubjects.set(eventName, new ReplaySubject<any>(1));
     }
     const subject = this._eventSubjects.get(eventName)!;
 
