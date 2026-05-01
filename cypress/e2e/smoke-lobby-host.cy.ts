@@ -15,8 +15,8 @@ describe('Lobby Smoke Test - Host', () => {
             language: 'en',
             state: 'Lobby',
             players: [
-              { userId: 1, nickname: 'Host', isHost: true, isOnline: true },
-              { userId: 2, nickname: 'Guest', isHost: false, isOnline: true }
+              { userId: 1, nickname: 'Host', isHost: true, isOnline: true, totalScore: 0 },
+              { userId: 2, nickname: 'Guest', isHost: false, isOnline: true, totalScore: 0 }
             ],
             selectedCategoryIds: [1],
             hostUserId: 1
@@ -34,7 +34,9 @@ describe('Lobby Smoke Test - Host', () => {
   it('should show configure game controls for host', () => {
     // 3. Assert Host Controls with increased timeout to allow for Angular lifecycle completion
     cy.get('.lobby-card', { timeout: 10000 }).should('be.visible');
+    cy.wait('@getLobby');
     // Ensure the lobby snapshot has been rendered
+    cy.wait(1000);
     cy.get('.player-item', { timeout: 10000 }).should('have.length.at.least', 2);
     cy.get('.host-controls', { timeout: 10000 }).should('be.visible');
     

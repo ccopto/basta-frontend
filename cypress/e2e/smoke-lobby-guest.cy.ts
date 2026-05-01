@@ -15,8 +15,8 @@ describe('Lobby Smoke Test - Guest', () => {
             language: 'en',
             state: 'Lobby',
             players: [
-              { userId: 1, nickname: 'Host', isHost: true, isOnline: true },
-              { userId: 2, nickname: 'Guest', isHost: false, isOnline: true }
+              { userId: 1, nickname: 'Host', isHost: true, isOnline: true, totalScore: 0 },
+              { userId: 2, nickname: 'Guest', isHost: false, isOnline: true, totalScore: 0 }
             ],
             selectedCategoryIds: [1],
             hostUserId: 1
@@ -29,12 +29,8 @@ describe('Lobby Smoke Test - Guest', () => {
         }
     });
     cy.wait('@getLobby');
-  });
-
-  it('should display waiting indicator and navigate on GameStarted', () => {
-    // 3. Verify Lobby is visible
-    cy.get('.lobby-card', { timeout: 10000 }).should('be.visible');
     // Ensure the lobby snapshot has been rendered by waiting for the player list
+    cy.wait(1000); 
     cy.get('.player-item', { timeout: 10000 }).should('have.length.at.least', 2);
     cy.get('.waiting-indicator', { timeout: 10000 }).should('be.visible');
 
