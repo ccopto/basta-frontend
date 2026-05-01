@@ -40,7 +40,8 @@ describe('Create Game (US-01 / US-03)', () => {
       hostNickname: 'CypressUser',
       preferredLanguage: 'en',
       totalRounds: 5,
-      timerDuration: 60
+      timerDuration: 60,
+      categoryIds: [1]
     });
 
     // Verify the URL changed to the lobby route

@@ -33,7 +33,8 @@ describe('Gameplay Flow (US-04)', () => {
     }).as('getCategories');
 
     // 2. Perform Join Action
-    cy.get('input#nickname').type('GuestUser');
+    cy.contains('Join Existing Game').click();
+    cy.get('input#joinNickname').type('GuestUser');
     cy.get('input#gameCode').type('ABCD');
     cy.contains('Join Game').click();
 

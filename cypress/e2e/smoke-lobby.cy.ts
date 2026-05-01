@@ -4,7 +4,7 @@ describe('Lobby Smoke Test', () => {
   });
 
   it('should join game and trigger SignalR event', () => {
-    // 1. Mock API responses
+    // 1. Mock API
     cy.intercept('POST', '**/api/games/ABCD/join', {
         statusCode: 200,
         body: { userId: 1, gameCode: 'ABCD' }
