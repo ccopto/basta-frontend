@@ -18,7 +18,7 @@ import { LobbySnapshot } from '../../models/lobby.models';
         <header class="lobby-header">
           <div class="header-tags">
             <span class="tag lang-tag">{{ lobbyState?.language === 'es' ? 'Español' : 'English' }}</span>
-            <span class="tag rounds-tag" *ngIf="lobbyState">🎯 Score: {{ lobbyState.targetScore }}</span>
+            <span class="tag rounds-tag" *ngIf="lobbyState">🎯 {{ lobbyState.totalRounds }} Rounds</span>
           </div>
           <h1 class="game-code">{{ gameCode }}</h1>
           <p class="subtitle" *ngIf="lobbyState">
@@ -349,17 +349,27 @@ export class LobbyComponent implements OnInit, OnDestroy {
     // SignalR events should be unregistered if we don't plan to reuse them
     this.registeredEvents.forEach(e => this.signalrService.off(e));
     this.registeredEvents = [];
+    
+    // Explicitly reset transient subjects when leaving the lobby
+    // to prevent instant replay of events like GameStarted if user joins another game
+    this.signalrService.resetEvents();
   }
 
   private async connectToLobby() {
     // 1. Initial snapshot fetch to ensure we have data immediately
     this.gameService.getGame(this.gameCode).pipe(takeUntil(this.destroy$)).subscribe({
       next: (snapshot) => {
-        this.lobbyState = snapshot;
-        this.emptySlots = Array(Math.max(0, 5 - snapshot.players.length)).fill(null);
+        try {
+          this.lobbyState = snapshot;
+          this.emptySlots = Array(Math.max(0, 5 - (snapshot?.players?.length || 0))).fill(null);
+          this.playerState.updateState({ hostUserId: snapshot.hostUserId });
+        } catch (e) {
+          console.error('[Lobby] Error processing initial snapshot:', e);
+        }
       },
       error: (err) => {
-        console.warn('Could not fetch initial lobby state', err);
+        console.warn('[Lobby] Could not fetch initial lobby state', err);
+        this.errorMessage = 'Could not fetch initial lobby state. Please try refreshing.';
       }
     });
 
@@ -370,9 +380,14 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.receiveLobbyUpdateSub = this.signalrService.on<LobbySnapshot>('ReceiveLobbyUpdate');
     this.registeredEvents.push('ReceiveLobbyUpdate');
     this.receiveLobbyUpdateSub.pipe(takeUntil(this.destroy$)).subscribe(snapshot => {
-      this.lobbyState = snapshot;
-      this.emptySlots = Array(Math.max(0, 5 - snapshot.players.length)).fill(null);
-      this.playerState.updateState({ hostUserId: snapshot.hostUserId });
+      try {
+        this.lobbyState = snapshot;
+        this.errorMessage = '';
+        this.emptySlots = Array(Math.max(0, 5 - (snapshot?.players?.length || 0))).fill(null);
+        this.playerState.updateState({ hostUserId: snapshot.hostUserId });
+      } catch (e) {
+        console.error('[Lobby] Error processing ReceiveLobbyUpdate:', e);
+      }
     });
 
 

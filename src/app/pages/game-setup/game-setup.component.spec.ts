@@ -26,7 +26,7 @@ describe('GameSetupComponent', () => {
 
     mockGameService.getGame.and.returnValue(of({
       gameCode: 'ABCD',
-      targetScore: 5,
+      totalRounds: 5,
       timerDuration: 60
     } as any));
 

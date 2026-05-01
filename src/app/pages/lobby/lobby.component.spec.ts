@@ -4,7 +4,7 @@ import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
 import { GameService } from '../../services/game.service';
 import { Router } from '@angular/router';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 describe('LobbyComponent', () => {
   let component: LobbyComponent;
@@ -18,7 +18,7 @@ describe('LobbyComponent', () => {
   const gameStartedSubject = new Subject<void>();
 
   beforeEach(async () => {
-    mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off', 'stopConnection']);
+    mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off', 'stopConnection', 'resetEvents']);
     mockPlayerState = jasmine.createSpyObj('PlayerStateService', ['clearState', 'updateState'], {
       currentState: { gameCode: 'ABCD', nickname: 'Host', userId: 1, isHost: true, hostUserId: 1 }
     });
@@ -30,7 +30,8 @@ describe('LobbyComponent', () => {
       gameCode: 'ABCD',
       players: [{ userId: 1, nickname: 'Host', isHost: true, isOnline: true }],
       language: 'en',
-      targetScore: 50
+      totalRounds: 5,
+      hostUserId: 1
     } as any));
 
     (mockSignalr.on as jasmine.Spy).and.callFake((event: string) => {
@@ -98,4 +99,68 @@ describe('LobbyComponent', () => {
     expect(mockSignalr.off).toHaveBeenCalledWith('Ev1');
     expect(mockSignalr.off).toHaveBeenCalledWith('Ev2');
   });
+  it('should display error message when getGame fails', fakeAsync(() => {
+    // Override the mock for this test
+    mockGameService.getGame.and.returnValue(throwError(() => ({ message: 'API Error' })));
+    
+    // Re-initialize component to trigger ngOnInit with the new mock
+    fixture = TestBed.createComponent(LobbyComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    tick();
+    
+    expect(component.errorMessage).toBe('Could not fetch initial lobby state. Please try refreshing.');
+    expect(component.lobbyState).toBeNull();
+  }));
+
+  it('should display total rounds correctly', () => {
+    expect(component.lobbyState?.totalRounds).toBe(5);
+  });
+
+  it('should recover lobbyState from SignalR broadcast even when REST fails', fakeAsync(() => {
+    // 1. Setup REST failure
+    mockGameService.getGame.and.returnValue(throwError(() => ({ message: 'API Error' })));
+    
+    // Re-init
+    fixture = TestBed.createComponent(LobbyComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    tick();
+    
+    expect(component.errorMessage).toBe('Could not fetch initial lobby state. Please try refreshing.');
+    expect(component.lobbyState).toBeNull();
+
+    // 2. Simulate SignalR broadcast recovery
+    const recoverySnapshot = {
+      gameCode: 'ABCD',
+      players: [{ userId: 1, nickname: 'Host', isHost: true, isOnline: true }],
+      totalRounds: 5,
+      hostUserId: 1
+    };
+    
+    lobbyUpdateSubject.next(recoverySnapshot);
+    fixture.detectChanges();
+
+    // 3. Assert recovery
+    expect(component.lobbyState).not.toBeNull();
+    expect(component.errorMessage).toBe(''); // Should be cleared
+  }));
+
+  it('should show error when both REST and SignalR have not responded yet', fakeAsync(() => {
+    mockGameService.getGame.and.returnValue(throwError(() => ({ message: 'API Error' })));
+    
+    fixture = TestBed.createComponent(LobbyComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    tick();
+    
+    expect(component.errorMessage).toBe('Could not fetch initial lobby state. Please try refreshing.');
+    expect(component.lobbyState).toBeNull();
+    // No SignalR emit here
+  }));
+
+  it('should update PlayerState with hostUserId from initial REST snapshot', fakeAsync(() => {
+    // Already triggered in beforeEach
+    expect(mockPlayerState.updateState).toHaveBeenCalledWith(jasmine.objectContaining({ hostUserId: 1 }));
+  }));
 });

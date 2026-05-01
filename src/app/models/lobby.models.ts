@@ -31,7 +31,7 @@ export interface PlayerDto {
 
 export interface LobbySnapshot {
   gameCode: string;
-  targetScore: number;
+  totalRounds: number;
   timerDuration: number;
   language: string;
   state: string;

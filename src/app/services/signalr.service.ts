@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { Subject, BehaviorSubject } from 'rxjs';
+import { Injectable, NgZone } from '@angular/core';
+import { Subject, BehaviorSubject, ReplaySubject } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../environments/environment';
 
@@ -21,6 +21,23 @@ export class SignalrService {
   /** Tracks the currently joined game group to prevent redundant JoinGame calls. */
   public currentGameCode: string | null = null;
 
+  /** Registry of Subjects per event name to ensure stability and multi-consumer support. */
+  private readonly _eventSubjects = new Map<string, Subject<any>>();
+
+  constructor(private zone: NgZone) {}
+
+  /**
+   * Resets all registered event subjects.
+   * Useful when leaving a game session to prevent stale transient events (like GameStarted)
+   * from replaying instantly upon re-joining a new session.
+   */
+  public resetEvents(): void {
+    // Complete existing subjects to cleanly un-subscribe current listeners
+    this._eventSubjects.forEach(subject => subject.complete());
+    this._eventSubjects.clear();
+    console.log('[SignalR] Event subjects reset.');
+  }
+
   /**
    * Build and start the SignalR connection to the Basta hub.
    */
@@ -35,9 +52,10 @@ export class SignalrService {
 
     try {
       this.connectionStateSubject.next('connecting');
+      console.log('[SignalR] Attempting to start connection to:', environment.hubUrl);
       await this.hubConnection.start();
       this.connectionStateSubject.next('connected');
-      console.log('[SignalR] Connected successfully.');
+      console.log('[SignalR] Connection started successfully.');
     } catch (err) {
       this.connectionStateSubject.next('disconnected');
       console.error('[SignalR] Connection failed:', err);
@@ -64,6 +82,7 @@ export class SignalrService {
     if (this.hubConnection) {
       await this.hubConnection.stop();
       this.hubConnection = null;
+      this.resetEvents();
       this.connectionStateSubject.next('disconnected');
       console.log('[SignalR] Disconnected.');
     }
@@ -74,28 +93,41 @@ export class SignalrService {
    * @param methodName The name of the hub method to call.
    * @param args Arguments to pass to the hub method.
    */
-  async invoke<T = void>(methodName: string, ...args: unknown[]): Promise<T> {
+   async invoke<T = void>(methodName: string, ...args: unknown[]): Promise<T> {
     if (!this.hubConnection) {
+      console.error('[SignalR] Invoke failed: No active connection.', { methodName, args });
       throw new Error('[SignalR] No active connection. Call startConnection() first.');
     }
-    return this.hubConnection.invoke<T>(methodName, ...args);
+    console.log(`[SignalR] Invoking: ${methodName}`, args);
+    try {
+      const result = await this.hubConnection.invoke<T>(methodName, ...args);
+      console.log(`[SignalR] Invoke ${methodName} SUCCESS`, result);
+      return result;
+    } catch (err) {
+      console.error(`[SignalR] Invoke ${methodName} FAILED:`, err);
+      throw err;
+    }
   }
 
   /**
    * Subscribe to a server-to-client event.
-   * Returns a Subject that emits whenever the server broadcasts the given event.
-   * Note: This assumes a single-consumer model. If multiple components listen to the 
-   * same event simultaneously, registering a new handler will unregister the old one.
+   * Returns a stable Subject that emits whenever the server broadcasts the given event.
+   * Multiple calls for the same eventName will return the same Subject instance.
    * @param eventName The name of the SignalR event to listen for.
    */
   on<T>(eventName: string): Subject<T> {
-    // Remove any previous handler to avoid duplicates (single-consumer assumption)
-    this.hubConnection?.off(eventName);
+    if (!this._eventSubjects.has(eventName)) {
+      this._eventSubjects.set(eventName, new ReplaySubject<any>(1));
+    }
+    const subject = this._eventSubjects.get(eventName)!;
 
-    const subject = new Subject<T>();
+    // Remove any previous handler to avoid duplicates, then register the shared one
+    this.hubConnection?.off(eventName);
     if (this.hubConnection) {
       this.hubConnection.on(eventName, (data: T) => {
-        subject.next(data);
+        this.zone.run(() => {
+          subject.next(data);
+        });
       });
     }
     return subject;
@@ -127,18 +159,24 @@ export class SignalrService {
     if (!this.hubConnection) return;
 
     this.hubConnection.onreconnecting(() => {
-      this.connectionStateSubject.next('reconnecting');
-      console.warn('[SignalR] Reconnecting...');
+      this.zone.run(() => {
+        this.connectionStateSubject.next('reconnecting');
+        console.warn('[SignalR] Reconnecting...');
+      });
     });
 
     this.hubConnection.onreconnected(() => {
-      this.connectionStateSubject.next('connected');
-      console.log('[SignalR] Reconnected.');
+      this.zone.run(() => {
+        this.connectionStateSubject.next('connected');
+        console.log('[SignalR] Reconnected.');
+      });
     });
 
     this.hubConnection.onclose(() => {
-      this.connectionStateSubject.next('disconnected');
-      console.warn('[SignalR] Connection closed.');
+      this.zone.run(() => {
+        this.connectionStateSubject.next('disconnected');
+        console.warn('[SignalR] Connection closed.');
+      });
     });
   }
 }

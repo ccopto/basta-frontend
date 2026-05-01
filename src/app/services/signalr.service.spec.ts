@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { NgZone } from '@angular/core';
 import { SignalrService } from './signalr.service';
 import * as signalR from '@microsoft/signalr';
 
@@ -48,5 +49,70 @@ describe('SignalrService', () => {
     await service.stopConnection();
     expect(mockHubConnection.stop).toHaveBeenCalled();
     expect(service.currentGameCode).toBeNull();
+  });
+  it('should emit received events inside NgZone', async () => {
+    let emittedInsideZone = false;
+    const zone = TestBed.inject(NgZone);
+    
+    // Setup listener
+    await service.startConnection();
+    const eventSubject = service.on<string>('TestEvent');
+    
+    // Capture the callback registered with SignalR
+    const onSpy = mockHubConnection.on as jasmine.Spy;
+    const callback = onSpy.calls.argsFor(0)[1];
+    
+    eventSubject.subscribe(() => {
+      emittedInsideZone = NgZone.isInAngularZone();
+    });
+    
+    // Simulate SignalR event firing OUTSIDE the zone (mocking library behavior)
+    zone.runOutsideAngular(() => {
+      callback('test data');
+    });
+    
+    expect(emittedInsideZone).toBeTrue();
+  });
+
+  it('should return the same Subject on repeated on() calls for the same event', async () => {
+    await service.startConnection();
+    const s1 = service.on<string>('Foo');
+    const s2 = service.on<string>('Foo');
+    expect(s1).toBe(s2);
+  });
+
+  it('should not lose subscribers when on() is called again for the same event', async () => {
+    let receivedValue = '';
+    
+    await service.startConnection();
+    const s1 = service.on<string>('Foo');
+    
+    s1.subscribe(val => receivedValue = val);
+    
+    // Call on() again - in the current buggy implementation, this orphans s1
+    service.on<string>('Foo');
+    
+    // Capture the callback registered with SignalR
+    const onSpy = mockHubConnection.on as jasmine.Spy;
+    const callback = onSpy.calls.mostRecent().args[1];
+    
+    callback('test data');
+    
+    expect(receivedValue).toBe('test data');
+  });
+
+  it('should clear _eventSubjects when resetEvents is called', async () => {
+    await service.startConnection();
+    
+    // Register event
+    const s1 = service.on<string>('Foo');
+    
+    service.resetEvents();
+    
+    // Request event again
+    const s2 = service.on<string>('Foo');
+    
+    // Since we cleared it, s2 should be a new Subject, not the same as s1
+    expect(s1).not.toBe(s2);
   });
 });
