@@ -16,10 +16,13 @@ describe('Lobby Smoke Test', () => {
     cy.get('input#gameCode').type('ABCD');
     cy.contains('Join Game').click();
 
-    // 3. Trigger SignalR event manually
+    // 3. Verify transition to Lobby
+    cy.url().should('include', '/lobby/ABCD');
+
+    // 4. Trigger SignalR event manually
     cy.triggerSignalR('GameStarted', {});
     
-    // 4. Assert navigation
+    // 5. Assert navigation
     cy.url().should('include', '/game/ABCD');
   });
 });
