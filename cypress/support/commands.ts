@@ -1,12 +1,9 @@
 /// <reference types="cypress" />
 
 Cypress.Commands.add('triggerSignalR', (eventName: string, data: any) => {
-    cy.window().then((win: any) => {
-        if (win.basta_mock_signalr) {
-            win.basta_mock_signalr.trigger(eventName, data);
-        } else {
-            throw new Error('SignalR mock not initialized on window.basta_mock_signalr');
-        }
+    // Poll the window for the mock object to ensure it is initialized
+    cy.window().its('basta_mock_signalr', { timeout: 10000 }).should('exist').then((mock: any) => {
+        mock.trigger(eventName, data);
     });
 });
 
