@@ -24,7 +24,23 @@ export class SignalrService {
   /** Registry of Subjects per event name to ensure stability and multi-consumer support. */
   private readonly _eventSubjects = new Map<string, Subject<any>>();
 
-  constructor(private zone: NgZone) {}
+  constructor(private zone: NgZone) {
+    if (!environment.production) {
+      (window as any).basta_mock_signalr = {
+        trigger: (eventName: string, data: any) => {
+          this.zone.run(() => {
+            const subject = this._eventSubjects.get(eventName);
+            if (subject) {
+              subject.next(data);
+              console.log(`[SignalR Mock] Triggered ${eventName}`, data);
+            } else {
+              console.warn(`[SignalR Mock] No subject registered for ${eventName}`);
+            }
+          });
+        }
+      };
+    }
+  }
 
   /**
    * Resets all registered event subjects.
