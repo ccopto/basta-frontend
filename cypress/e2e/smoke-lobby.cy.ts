@@ -11,7 +11,8 @@ describe('Lobby Smoke Test', () => {
     });
     
     // 2. Perform Join Action
-    cy.get('input#nickname').type('Nick');
+    cy.contains('Join Existing Game').click();
+    cy.get('input#joinNickname').type('Nick');
     cy.get('input#gameCode').type('ABCD');
     cy.contains('Join Game').click();
 
