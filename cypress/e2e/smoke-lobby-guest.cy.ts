@@ -1,10 +1,8 @@
 describe('Lobby Smoke Test - Guest', () => {
   beforeEach(() => {
     // 1. Mock Storage/Auth state as a Guest
-    cy.window().then((win) => {
-        win.sessionStorage.setItem('basta_player_state', JSON.stringify({
-            userId: 2, nickname: 'Guest', isHost: false, gameCode: 'ABCD'
-        }));
+    const initialState = JSON.stringify({
+        userId: 2, nickname: 'Guest', isHost: false, gameCode: 'ABCD'
     });
 
     // 2. Mock APIs
@@ -25,7 +23,11 @@ describe('Lobby Smoke Test - Guest', () => {
         }
     }).as('getLobby');
     
-    cy.visit('/lobby/ABCD');
+    cy.visit('/lobby/ABCD', {
+        onBeforeLoad: (win) => {
+            win.sessionStorage.setItem('basta_player_state', initialState);
+        }
+    });
     cy.wait('@getLobby');
   });
 

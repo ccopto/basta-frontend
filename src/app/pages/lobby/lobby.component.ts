@@ -373,10 +373,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
       }
     });
 
-    // 2. Connect SignalR
-    await this.signalrService.startConnection();
-    
-    // 3. Register listeners
+    // 2. Register listeners BEFORE connecting to ensure we don't miss any events during handshake
     this.receiveLobbyUpdateSub = this.signalrService.on<LobbySnapshot>('ReceiveLobbyUpdate');
     this.registeredEvents.push('ReceiveLobbyUpdate');
     this.receiveLobbyUpdateSub.pipe(takeUntil(this.destroy$)).subscribe(snapshot => {
@@ -390,12 +387,14 @@ export class LobbyComponent implements OnInit, OnDestroy {
       }
     });
 
-
     this.gameStartedSub = this.signalrService.on<void>('GameStarted');
     this.registeredEvents.push('GameStarted');
     this.gameStartedSub.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.router.navigate(['/game', this.gameCode]);
     });
+    
+    // 3. Connect SignalR
+    await this.signalrService.startConnection();
 
     // 4. Join the group on HUB
     await this.signalrService.invoke('JoinGame', this.gameCode, this.currentUserId, this.playerState.currentState.nickname);
