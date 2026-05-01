@@ -1,10 +1,28 @@
 describe('Scoring Smoke Test', () => {
   beforeEach(() => {
+    // 1. Mock Storage/Auth state
+    cy.window().then((win) => {
+        win.sessionStorage.setItem('basta_player_state', JSON.stringify({
+            userId: 1, nickname: 'Host', isHost: true, gameCode: 'ABCD'
+        }));
+    });
+
+    // 2. Mock API endpoints
+    cy.intercept('GET', '**/api/categories?lang=en', [
+      { categoryId: 1, name: 'Fruits' }
+    ]).as('getCats');
+    cy.intercept('GET', '**/api/games/ABCD', {
+      selectedCategoryIds: [1],
+      gameCode: 'ABCD'
+    }).as('getGame');
+
+    // 3. Navigate and wait for init
     cy.visit('/game/ABCD');
+    cy.wait(['@getCats', '@getGame']);
   });
 
   it('should display validation and results phases', () => {
-    // 1. Trigger Validation Phase
+    // 4. Trigger Validation Phase
     cy.triggerSignalR('DisplayScoring', {
       players: [
         {
@@ -15,10 +33,11 @@ describe('Scoring Smoke Test', () => {
       ]
     });
 
-    // 2. Assert Validation UI
-    cy.contains('validating').should('exist'); // Assuming class or text indicator
+    // 5. Assert Validation UI
+    // app-validation-grid component is rendered in the 'validating' case
+    cy.get('app-validation-grid').should('exist');
 
-    // 3. Trigger Results Phase
+    // 6. Trigger Results Phase
     cy.triggerSignalR('ReceiveGameScore', [
       {
         userId: 1,
@@ -29,7 +48,8 @@ describe('Scoring Smoke Test', () => {
       }
     ]);
 
-    // 4. Assert Results UI
-    cy.contains('10').should('be.visible'); // Score display
+    // 7. Assert Results UI
+    cy.get('app-round-results').should('be.visible');
+    cy.contains('10').should('be.visible'); 
   });
 });
