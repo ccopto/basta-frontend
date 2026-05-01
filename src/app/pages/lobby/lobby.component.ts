@@ -349,6 +349,10 @@ export class LobbyComponent implements OnInit, OnDestroy {
     // SignalR events should be unregistered if we don't plan to reuse them
     this.registeredEvents.forEach(e => this.signalrService.off(e));
     this.registeredEvents = [];
+    
+    // Explicitly reset transient subjects when leaving the lobby
+    // to prevent instant replay of events like GameStarted if user joins another game
+    this.signalrService.resetEvents();
   }
 
   private async connectToLobby() {

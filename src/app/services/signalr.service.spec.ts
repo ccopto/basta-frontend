@@ -100,4 +100,19 @@ describe('SignalrService', () => {
     
     expect(receivedValue).toBe('test data');
   });
+
+  it('should clear _eventSubjects when resetEvents is called', async () => {
+    await service.startConnection();
+    
+    // Register event
+    const s1 = service.on<string>('Foo');
+    
+    service.resetEvents();
+    
+    // Request event again
+    const s2 = service.on<string>('Foo');
+    
+    // Since we cleared it, s2 should be a new Subject, not the same as s1
+    expect(s1).not.toBe(s2);
+  });
 });

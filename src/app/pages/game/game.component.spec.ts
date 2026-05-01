@@ -29,7 +29,7 @@ describe('GameComponent', () => {
   const receiveGameScoreSubject = new Subject<any>();
 
   beforeEach(async () => {
-    mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off'], {
+    mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off', 'resetEvents'], {
         currentGameCode: null
     });
     mockPlayerState = jasmine.createSpyObj('PlayerStateService', [], {

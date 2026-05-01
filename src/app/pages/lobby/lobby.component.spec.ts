@@ -18,7 +18,7 @@ describe('LobbyComponent', () => {
   const gameStartedSubject = new Subject<void>();
 
   beforeEach(async () => {
-    mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off', 'stopConnection']);
+    mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off', 'stopConnection', 'resetEvents']);
     mockPlayerState = jasmine.createSpyObj('PlayerStateService', ['clearState', 'updateState'], {
       currentState: { gameCode: 'ABCD', nickname: 'Host', userId: 1, isHost: true, hostUserId: 1 }
     });

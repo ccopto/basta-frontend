@@ -27,6 +27,18 @@ export class SignalrService {
   constructor(private zone: NgZone) {}
 
   /**
+   * Resets all registered event subjects.
+   * Useful when leaving a game session to prevent stale transient events (like GameStarted)
+   * from replaying instantly upon re-joining a new session.
+   */
+  public resetEvents(): void {
+    // Complete existing subjects to cleanly un-subscribe current listeners
+    this._eventSubjects.forEach(subject => subject.complete());
+    this._eventSubjects.clear();
+    console.log('[SignalR] Event subjects reset.');
+  }
+
+  /**
    * Build and start the SignalR connection to the Basta hub.
    */
   async startConnection(): Promise<void> {
@@ -70,7 +82,7 @@ export class SignalrService {
     if (this.hubConnection) {
       await this.hubConnection.stop();
       this.hubConnection = null;
-      this._eventSubjects.clear();
+      this.resetEvents();
       this.connectionStateSubject.next('disconnected');
       console.log('[SignalR] Disconnected.');
     }
