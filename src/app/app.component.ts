@@ -14,5 +14,12 @@ export class AppComponent {
     this.translate.addLangs(['en', 'es']);
     this.translate.setDefaultLang('en');
     this.translate.use('en');
+
+    // Attach mock globally so Cypress can hook into it
+    (window as any).basta_mock_signalr = {
+      trigger: (eventName: string, data: any) => {
+        console.log(`[SignalR Mock App] Event triggered: ${eventName}`, data);
+      }
+    };
   }
 }

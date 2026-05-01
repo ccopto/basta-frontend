@@ -26,18 +26,20 @@ export class SignalrService {
 
   constructor(private zone: NgZone) {
     if (!environment.production) {
-      (window as any).basta_mock_signalr = {
-        trigger: (eventName: string, data: any) => {
+      if (!(window as any).basta_mock_signalr) {
+          (window as any).basta_mock_signalr = { trigger: () => {} };
+      }
+      
+      (window as any).basta_mock_signalr.trigger = (eventName: string, data: any) => {
           this.zone.run(() => {
             const subject = this._eventSubjects.get(eventName);
             if (subject) {
               subject.next(data);
-              console.log(`[SignalR Mock] Triggered ${eventName}`, data);
+              console.log(`[SignalR Mock App] Subject triggered: ${eventName}`, data);
             } else {
-              console.warn(`[SignalR Mock] No subject registered for ${eventName}`);
+              console.warn(`[SignalR Mock App] No subject registered for ${eventName}`);
             }
           });
-        }
       };
     }
   }
