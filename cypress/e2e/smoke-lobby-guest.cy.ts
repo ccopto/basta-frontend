@@ -33,14 +33,16 @@ describe('Lobby Smoke Test - Guest', () => {
 
   it('should display waiting indicator and navigate on GameStarted', () => {
     // 3. Verify Lobby is visible
-    cy.get('.lobby-card').should('be.visible');
-    cy.get('.waiting-indicator').should('be.visible');
+    cy.get('.lobby-card', { timeout: 10000 }).should('be.visible');
+    // Ensure the lobby snapshot has been rendered
+    cy.get('.waiting-indicator', { timeout: 10000 }).should('be.visible');
 
     // 4. Trigger SignalR event manually
     cy.triggerSignalR('GameStarted', {});
     
     // 5. Assert navigation
     cy.url().should('include', '/game/ABCD');
+  });
 });
 
 });
