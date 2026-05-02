@@ -28,6 +28,7 @@ describe('Lobby Smoke Test - Host', () => {
             win.sessionStorage.setItem('basta_player_state', initialState);
         }
     });
+    cy.reload(); // Force reload
     cy.wait('@getLobby');
   });
 

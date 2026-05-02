@@ -28,6 +28,7 @@ describe('Lobby Smoke Test - Guest', () => {
             win.sessionStorage.setItem('basta_player_state', initialState);
         }
     });
+    cy.reload(); // Force reload to ensure PlayerStateService reads updated sessionStorage
     cy.wait('@getLobby');
   });
 
