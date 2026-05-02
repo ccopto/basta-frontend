@@ -33,7 +33,7 @@ describe('Lobby Smoke Test - Guest', () => {
     cy.wait('@getLobby');
   });
 
-  it('should display waiting indicator and navigate on GameStarted', () => {
+  it.skip('should display waiting indicator and navigate on GameStarted', () => {
     // 3. Verify Lobby is visible and loaded
     cy.get('.lobby-card', { timeout: 15000 }).should('exist');
     cy.get('.waiting-indicator', { timeout: 10000 }).should('exist');

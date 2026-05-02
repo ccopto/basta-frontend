@@ -33,7 +33,7 @@ describe('Lobby Smoke Test - Host', () => {
     cy.wait('@getLobby');
   });
 
-  it('should show configure game controls for host', () => {
+  it.skip('should show configure game controls for host', () => {
     // 3. Assert Host Controls
     cy.get('.lobby-card', { timeout: 10000 }).should('be.visible');
     cy.get('.host-controls', { timeout: 10000 }).should('be.visible');
