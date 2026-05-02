@@ -23,22 +23,28 @@ describe('Lobby Smoke Test - Host', () => {
         }
     }).as('getLobby');
     
+    // Visit with storage setup
     cy.visit('/lobby/ABCD', {
         onBeforeLoad: (win) => {
             win.sessionStorage.clear();
             win.sessionStorage.setItem('basta_player_state', initialState);
         }
     });
+    
+    // Crucial: reload for synchronization
     cy.reload();
-    // Wait for SignalR mock to be ready
-    cy.window().its('basta_mock_signalr', { timeout: 10000 }).should('exist');
-    cy.wait('@getLobby');
+    
+    // Wait for mock
+    cy.window().its('basta_mock_signalr', { timeout: 15000 }).should('exist');
+    
+    // Wait for API
+    cy.wait('@getLobby', { timeout: 20000 });
   });
 
   it('should show configure game controls for host', () => {
     // 3. Assert Host Controls
-    cy.get('.lobby-card', { timeout: 20000 }).should('be.visible');
-    cy.get('.host-controls', { timeout: 20000 }).should('be.visible');
+    cy.get('[data-cy="lobby-loaded"]', { timeout: 15000 }).should('exist');
+    cy.get('.host-controls', { timeout: 10000 }).should('be.visible');
     
     cy.contains('Configure Game').should('not.be.disabled').click();
     

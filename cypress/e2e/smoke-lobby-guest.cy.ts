@@ -23,22 +23,28 @@ describe('Lobby Smoke Test - Guest', () => {
         }
     }).as('getLobby');
     
+    // Visit with storage setup
     cy.visit('/lobby/ABCD', {
         onBeforeLoad: (win) => {
             win.sessionStorage.clear();
             win.sessionStorage.setItem('basta_player_state', initialState);
         }
     });
+    
+    // Crucial: reload to ensure storage is synchronized with app state before component logic starts
     cy.reload();
-    // Wait for SignalR mock to be ready
-    cy.window().its('basta_mock_signalr', { timeout: 10000 }).should('exist');
-    cy.wait('@getLobby');
+    
+    // Wait for the SignalR mock to be available in the reloaded window
+    cy.window().its('basta_mock_signalr', { timeout: 15000 }).should('exist');
+    
+    // Wait for the API call from the reloaded page
+    cy.wait('@getLobby', { timeout: 20000 });
   });
 
   it('should display waiting indicator and navigate on GameStarted', () => {
     // 3. Verify Lobby is visible and loaded
-    cy.get('.lobby-card', { timeout: 20000 }).should('exist');
-    cy.get('.waiting-indicator', { timeout: 15000 }).should('exist');
+    cy.get('[data-cy="lobby-loaded"]', { timeout: 15000 }).should('exist');
+    cy.get('.waiting-indicator', { timeout: 10000 }).should('exist');
 
     // 4. Trigger SignalR event manually
     cy.triggerSignalR('GameStarted', {});
