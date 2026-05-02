@@ -68,6 +68,7 @@ export class PlayerStateService {
     // to bypass sessionStorage race conditions in CI environments.
     const testState = (window as any).BASTA_TEST_STATE;
     if (testState) {
+      (window as any).BASTA_TEST_STATE = null;
       return testState;
     }
 
