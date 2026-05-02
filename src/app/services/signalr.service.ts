@@ -35,7 +35,6 @@ export class SignalrService {
             const subject = this._eventSubjects.get(eventName);
             if (subject) {
               subject.next(data);
-              console.log(`[SignalR Mock App] Subject triggered: ${eventName}`, data);
             } else {
               console.warn(`[SignalR Mock App] No subject registered for ${eventName}`);
             }
@@ -53,7 +52,6 @@ export class SignalrService {
     // Complete existing subjects to cleanly un-subscribe current listeners
     this._eventSubjects.forEach(subject => subject.complete());
     this._eventSubjects.clear();
-    console.log('[SignalR] Event subjects reset.');
   }
 
   /**
@@ -70,10 +68,8 @@ export class SignalrService {
 
     try {
       this.connectionStateSubject.next('connecting');
-      console.log('[SignalR] Attempting to start connection to:', environment.hubUrl);
       await this.hubConnection.start();
       this.connectionStateSubject.next('connected');
-      console.log('[SignalR] Connection started successfully.');
     } catch (err) {
       this.connectionStateSubject.next('disconnected');
       console.error('[SignalR] Connection failed:', err);
@@ -102,7 +98,6 @@ export class SignalrService {
       this.hubConnection = null;
       this.resetEvents();
       this.connectionStateSubject.next('disconnected');
-      console.log('[SignalR] Disconnected.');
     }
   }
 
@@ -116,10 +111,8 @@ export class SignalrService {
       console.error('[SignalR] Invoke failed: No active connection.', { methodName, args });
       throw new Error('[SignalR] No active connection. Call startConnection() first.');
     }
-    console.log(`[SignalR] Invoking: ${methodName}`, args);
     try {
       const result = await this.hubConnection.invoke<T>(methodName, ...args);
-      console.log(`[SignalR] Invoke ${methodName} SUCCESS`, result);
       return result;
     } catch (err) {
       console.error(`[SignalR] Invoke ${methodName} FAILED:`, err);
@@ -186,7 +179,6 @@ export class SignalrService {
     this.hubConnection.onreconnected(() => {
       this.zone.run(() => {
         this.connectionStateSubject.next('connected');
-        console.log('[SignalR] Reconnected.');
       });
     });
 
