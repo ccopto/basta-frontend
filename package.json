@@ -9,7 +9,8 @@
     "test": "ng test",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "e2e:ci": "start-server-and-test start http://localhost:4200 cypress:run"
+    "e2e:ci": "start-server-and-test start http://localhost:4200 cypress:run",
+    "preflight": "npm run build && npm test -- --watch=false --browsers=ChromeHeadless && npm run e2e:ci"
   },
   "private": true,
   "dependencies": {
