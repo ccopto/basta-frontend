@@ -50,3 +50,4 @@ AGENTS.md
 # Temporary output
 *.txt
 test_output.txt
+server.log
