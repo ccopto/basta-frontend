@@ -7,6 +7,9 @@ export const gameGuard: CanActivateFn = (route, state) => {
   const playerState = inject(PlayerStateService);
   const expectedGameCode = route.paramMap.get('code');
 
+  // Ensure state is fresh from storage
+  playerState.refreshFromStorage();
+
   const { gameCode, nickname, userId } = playerState.currentState;
 
   // Most basic check: player must be part of this game and identified

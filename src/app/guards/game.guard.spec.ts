@@ -10,7 +10,7 @@ describe('gameGuard', () => {
 
   beforeEach(() => {
     router = jasmine.createSpyObj('Router', ['createUrlTree']);
-    playerStateService = jasmine.createSpyObj('PlayerStateService', ['clearState'], {
+    playerStateService = jasmine.createSpyObj('PlayerStateService', ['clearState', 'refreshFromStorage'], {
       currentState: { gameCode: null, nickname: null, userId: null }
     });
 

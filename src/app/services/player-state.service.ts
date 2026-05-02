@@ -40,6 +40,14 @@ export class PlayerStateService {
 
   constructor() { }
 
+  /**
+   * Manually refresh state from sessionStorage. 
+   * Useful for E2E tests or synchronization scenarios.
+   */
+  public refreshFromStorage(): void {
+    this.stateSubject.next(this.loadState());
+  }
+
   public get currentState(): PlayerState {
     return this.stateSubject.value;
   }
@@ -56,6 +64,13 @@ export class PlayerStateService {
   }
 
   private loadState(): PlayerState {
+    // Support for E2E testing: allow injecting state via global window variable
+    // to bypass sessionStorage race conditions in CI environments.
+    const testState = (window as any).BASTA_TEST_STATE;
+    if (testState) {
+      return testState;
+    }
+
     const saved = sessionStorage.getItem(this.STATE_KEY);
     if (saved) {
       try {

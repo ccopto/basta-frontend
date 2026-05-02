@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -32,7 +32,7 @@ import { LobbySnapshot } from '../../models/lobby.models';
             <p>Connecting to game...</p>
           </div>
           
-          <div *ngIf="errorMessage" class="error-msg global-error">
+          <div *ngIf="errorMessage" class="error-msg global-error" data-cy="lobby-error">
             {{ errorMessage }}
           </div>
 
@@ -324,7 +324,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
     private playerState: PlayerStateService,
     private signalrService: SignalrService,
     private gameService: GameService,
-    private router: Router
+    private router: Router,
+    private zone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -361,17 +363,22 @@ export class LobbyComponent implements OnInit, OnDestroy {
     // 1. Initial snapshot fetch to ensure we have data immediately
     this.gameService.getGame(this.gameCode).pipe(takeUntil(this.destroy$)).subscribe({
       next: (snapshot) => {
-        try {
-          this.lobbyState = snapshot;
-          this.emptySlots = Array(Math.max(0, 5 - (snapshot?.players?.length || 0))).fill(null);
-          this.playerState.updateState({ hostUserId: snapshot.hostUserId });
-        } catch (e) {
-          console.error('[Lobby] Error processing initial snapshot:', e);
-        }
+        this.zone.run(() => {
+          try {
+            this.lobbyState = snapshot;
+            this.emptySlots = Array(Math.max(0, 5 - (snapshot?.players?.length || 0))).fill(null);
+            this.playerState.updateState({ hostUserId: snapshot.hostUserId });
+            this.cdr.detectChanges();
+          } catch (e) {
+            console.error('[Lobby] Error processing initial snapshot:', e);
+          }
+        });
       },
       error: (err) => {
-        console.warn('[Lobby] Could not fetch initial lobby state', err);
-        this.errorMessage = 'Could not fetch initial lobby state. Please try refreshing.';
+        this.zone.run(() => {
+          console.warn('[Lobby] Could not fetch initial lobby state', err);
+          this.errorMessage = 'Could not fetch initial lobby state. Please try refreshing.';
+        });
       }
     });
 
@@ -379,14 +386,17 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.receiveLobbyUpdateSub = this.signalrService.on<LobbySnapshot>('ReceiveLobbyUpdate');
     this.registeredEvents.push('ReceiveLobbyUpdate');
     this.receiveLobbyUpdateSub.pipe(takeUntil(this.destroy$)).subscribe(snapshot => {
-      try {
-        this.lobbyState = snapshot;
-        this.errorMessage = '';
-        this.emptySlots = Array(Math.max(0, 5 - (snapshot?.players?.length || 0))).fill(null);
-        this.playerState.updateState({ hostUserId: snapshot.hostUserId });
-      } catch (e) {
-        console.error('[Lobby] Error processing ReceiveLobbyUpdate:', e);
-      }
+      this.zone.run(() => {
+        try {
+          this.lobbyState = snapshot;
+          this.errorMessage = '';
+          this.emptySlots = Array(Math.max(0, 5 - (snapshot?.players?.length || 0))).fill(null);
+          this.playerState.updateState({ hostUserId: snapshot.hostUserId });
+          this.cdr.detectChanges();
+        } catch (e) {
+          console.error('[Lobby] Error processing ReceiveLobbyUpdate:', e);
+        }
+      });
     });
 
     this.gameStartedSub = this.signalrService.on<void>('GameStarted');

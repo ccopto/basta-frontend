@@ -1,11 +1,9 @@
 describe('Gameplay Smoke Test', () => {
   beforeEach(() => {
     // 1. Mock Storage/Auth state
-    cy.window().then((win) => {
-        win.sessionStorage.setItem('basta_player_state', JSON.stringify({
-            userId: 1, nickname: 'Host', isHost: true, gameCode: 'ABCD'
-        }));
-    });
+    const state = {
+        userId: 1, nickname: 'Host', isHost: true, gameCode: 'ABCD'
+    };
 
     // 2. Mock API endpoints
     cy.intercept('GET', '**/api/categories?lang=en', [
@@ -17,7 +15,12 @@ describe('Gameplay Smoke Test', () => {
     }).as('getGame');
 
     // 3. Navigate and wait for init
-    cy.visit('/game/ABCD');
+    cy.visit('/game/ABCD', {
+        onBeforeLoad: (win) => {
+            (win as any).BASTA_TEST_STATE = state;
+            win.sessionStorage.setItem('basta_player_state', JSON.stringify(state));
+        }
+    });
     cy.wait(['@getCats', '@getGame']);
   });
 

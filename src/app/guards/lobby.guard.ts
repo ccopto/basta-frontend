@@ -7,6 +7,9 @@ export const lobbyGuard: CanActivateFn = (route, state) => {
   const playerState = inject(PlayerStateService);
   const expectedGameCode = route.paramMap.get('code');
 
+  // Ensure state is fresh from storage (critical for deep links and E2E)
+  playerState.refreshFromStorage();
+
   const currentCode = playerState.currentState.gameCode;
 
   if (currentCode && currentCode === expectedGameCode) {

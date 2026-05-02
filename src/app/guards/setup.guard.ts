@@ -7,6 +7,9 @@ export const setupGuard: CanActivateFn = (route, state) => {
   const playerState = inject(PlayerStateService);
   const expectedGameCode = route.paramMap.get('code');
 
+  // Ensure state is fresh from storage
+  playerState.refreshFromStorage();
+
   const { isHost, gameCode } = playerState.currentState;
 
   if (gameCode && gameCode === expectedGameCode && isHost) {
