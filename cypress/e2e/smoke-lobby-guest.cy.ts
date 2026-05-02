@@ -30,13 +30,15 @@ describe('Lobby Smoke Test - Guest', () => {
         }
     });
     cy.reload();
+    // Wait for SignalR mock to be ready
+    cy.window().its('basta_mock_signalr', { timeout: 10000 }).should('exist');
     cy.wait('@getLobby');
   });
 
-  it.skip('should display waiting indicator and navigate on GameStarted', () => {
+  it('should display waiting indicator and navigate on GameStarted', () => {
     // 3. Verify Lobby is visible and loaded
-    cy.get('.lobby-card', { timeout: 15000 }).should('exist');
-    cy.get('.waiting-indicator', { timeout: 10000 }).should('exist');
+    cy.get('.lobby-card', { timeout: 20000 }).should('exist');
+    cy.get('.waiting-indicator', { timeout: 15000 }).should('exist');
 
     // 4. Trigger SignalR event manually
     cy.triggerSignalR('GameStarted', {});

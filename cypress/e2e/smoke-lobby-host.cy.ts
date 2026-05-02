@@ -30,13 +30,15 @@ describe('Lobby Smoke Test - Host', () => {
         }
     });
     cy.reload();
+    // Wait for SignalR mock to be ready
+    cy.window().its('basta_mock_signalr', { timeout: 10000 }).should('exist');
     cy.wait('@getLobby');
   });
 
-  it.skip('should show configure game controls for host', () => {
+  it('should show configure game controls for host', () => {
     // 3. Assert Host Controls
-    cy.get('.lobby-card', { timeout: 10000 }).should('be.visible');
-    cy.get('.host-controls', { timeout: 10000 }).should('be.visible');
+    cy.get('.lobby-card', { timeout: 20000 }).should('be.visible');
+    cy.get('.host-controls', { timeout: 20000 }).should('be.visible');
     
     cy.contains('Configure Game').should('not.be.disabled').click();
     
