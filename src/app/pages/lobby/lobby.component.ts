@@ -21,7 +21,7 @@ import { LobbySnapshot } from '../../models/lobby.models';
             <span class="tag rounds-tag" *ngIf="lobbyState">🎯 {{ lobbyState.totalRounds }} Rounds</span>
           </div>
           <h1 class="game-code">{{ gameCode }}</h1>
-          <p class="subtitle" *ngIf="lobbyState">
+          <p class="subtitle" *ngIf="lobbyState" data-cy="lobby-loaded">
             Waiting for players... ({{ lobbyState.players.length }}/5)
           </p>
         </header>
@@ -39,6 +39,7 @@ import { LobbySnapshot } from '../../models/lobby.models';
           <div class="players-list" *ngIf="lobbyState">
             <div class="player-item hover-scale" 
                  *ngFor="let p of lobbyState.players"
+                 data-cy="player-item"
                  [class.is-me]="p.userId === currentUserId"
                  [class.is-offline]="!p.isOnline">
               <div class="avatar" [class.host-avatar]="p.isHost">

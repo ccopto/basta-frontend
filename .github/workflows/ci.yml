@@ -30,6 +30,5 @@ jobs:
     - name: Run E2E Tests
       run: |
         npm start &
-        # Give the server time to start (adjust sleep as needed for CI performance)
-        sleep 45 
+        npx wait-on http://localhost:4200
         npm run cypress:run
