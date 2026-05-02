@@ -329,7 +329,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const state = this.playerState.currentState;
+    console.log('[LobbyComponent] State loaded:', state);
     if (!state.gameCode || !state.userId) {
+      console.warn('[LobbyComponent] Invalid state, redirecting to home');
       this.router.navigate(['/home']);
       return;
     }
@@ -337,6 +339,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.gameCode = state.gameCode;
     this.currentUserId = state.userId;
     this.isHost = state.isHost;
+    console.log('[LobbyComponent] Initialized, isHost:', this.isHost);
+
 
     this.connectToLobby().catch(err => {
       this.errorMessage = 'Failed to connect to the live lobby. Please try rejoining.';
