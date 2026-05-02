@@ -13,6 +13,7 @@ export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'rec
 })
 export class SignalrService {
   private hubConnection: signalR.HubConnection | null = null;
+  private startConnectionPromise: Promise<void> | null = null;
 
   /** Observable connection state for the ConnectionStatus component. */
   private connectionStateSubject = new BehaviorSubject<ConnectionState>('disconnected');
@@ -58,13 +59,31 @@ export class SignalrService {
    * Build and start the SignalR connection to the Basta hub.
    */
   async startConnection(): Promise<void> {
-    if (this.hubConnection) {
-      return;
+    if (this.startConnectionPromise) {
+      return this.startConnectionPromise;
     }
 
-    this.hubConnection = this.buildConnection();
+    if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
+      return Promise.resolve();
+    }
 
-    this.registerConnectionEvents();
+    this.startConnectionPromise = this.internalStartConnection();
+    try {
+      await this.startConnectionPromise;
+    } finally {
+      this.startConnectionPromise = null;
+    }
+  }
+
+  private async internalStartConnection(): Promise<void> {
+    if (!this.hubConnection) {
+      this.hubConnection = this.buildConnection();
+      this.registerConnectionEvents();
+    }
+
+    if (this.hubConnection.state !== signalR.HubConnectionState.Disconnected) {
+      return;
+    }
 
     try {
       this.connectionStateSubject.next('connecting');
