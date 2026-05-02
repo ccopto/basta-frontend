@@ -16,7 +16,7 @@ export const lobbyGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // Clear any potentially stale state to avoid corrupted local state 
+  // Clear any potentially stale state to avoid corrupted local state
   playerState.clearState();
 
   // Route them back to home screen
