@@ -13,14 +13,14 @@ import { LobbySnapshot } from '../../models/lobby.models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="lobby-wrapper">
+    <div class="lobby-wrapper" data-cy="lobby-component">
       <div class="glass-card lobby-card animate-scale-in">
         <header class="lobby-header">
           <div class="header-tags">
             <span class="tag lang-tag">{{ lobbyState?.language === 'es' ? 'Español' : 'English' }}</span>
             <span class="tag rounds-tag" *ngIf="lobbyState">🎯 {{ lobbyState.totalRounds }} Rounds</span>
           </div>
-          <h1 class="game-code">{{ gameCode }}</h1>
+          <h1 class="game-code" data-cy="game-code-display">{{ gameCode }}</h1>
           <p class="subtitle" *ngIf="lobbyState" data-cy="lobby-loaded">
             Waiting for players... ({{ lobbyState.players.length }}/5)
           </p>
@@ -74,7 +74,7 @@ import { LobbySnapshot } from '../../models/lobby.models';
           </div>
           
           <div *ngIf="!isHost" class="player-controls">
-            <div class="waiting-indicator">
+            <div class="waiting-indicator" data-cy="waiting-indicator">
               <span class="pulse"></span>
               <p>Waiting for host to start...</p>
             </div>
@@ -396,10 +396,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
     });
     
     // 3. Connect SignalR
-    await this.signalrService.startConnection();
-
-    // 4. Join the group on HUB
-    await this.signalrService.invoke('JoinGame', this.gameCode, this.currentUserId, this.playerState.currentState.nickname);
+    this.signalrService.startConnection().then(() => {
+      // 4. Join the group on HUB
+      this.signalrService.invoke('JoinGame', this.gameCode, this.currentUserId, this.playerState.currentState.nickname);
+    }).catch(err => {
+      console.warn('[Lobby] SignalR connection/join failed:', err);
+    });
   }
 
   onConfigureGame() {
