@@ -25,10 +25,11 @@ describe('Lobby Smoke Test - Guest', () => {
     
     cy.visit('/lobby/ABCD', {
         onBeforeLoad: (win) => {
+            win.sessionStorage.clear();
             win.sessionStorage.setItem('basta_player_state', initialState);
         }
     });
-    cy.reload(); // Force reload to ensure PlayerStateService reads updated sessionStorage
+    cy.reload();
     cy.wait('@getLobby');
   });
 
