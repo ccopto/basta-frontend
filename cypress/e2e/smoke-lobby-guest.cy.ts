@@ -49,6 +49,12 @@ describe('Lobby Smoke Test - Guest', () => {
     cy.wait('@getLobby', { timeout: 20000 });
   });
 
+  afterEach(() => {
+    cy.window().then((win) => {
+      (win as any).BASTA_TEST_STATE = null;
+    });
+  });
+
   it('should display waiting indicator and navigate on GameStarted', () => {
     // 3. Verify Lobby is visible and loaded
     cy.url().should('include', '/lobby/ABCD');

@@ -49,6 +49,12 @@ describe('Lobby Smoke Test - Host', () => {
     cy.wait('@getLobby', { timeout: 20000 });
   });
 
+  afterEach(() => {
+    cy.window().then((win) => {
+      (win as any).BASTA_TEST_STATE = null;
+    });
+  });
+
   it('should show configure game controls for host', () => {
     // 3. Assert Host Controls
     cy.url().should('include', '/lobby/ABCD');
