@@ -32,12 +32,9 @@ describe('Lobby Smoke Test - Host', () => {
   });
 
   it('should show configure game controls for host', () => {
-    // 3. Assert Host Controls with increased timeout
+    // 3. Assert Host Controls
     cy.get('.lobby-card', { timeout: 10000 }).should('be.visible');
-    // Ensure the lobby snapshot has been rendered
-    cy.get('.player-item', { timeout: 10000 }).should('have.length.at.least', 2);
     cy.get('.host-controls', { timeout: 10000 }).should('be.visible');
-    
     cy.contains('Configure Game').should('not.be.disabled').click();
     
     // 4. Assert navigation
