@@ -8,7 +8,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
+    "e2e:ci": "start-server-and-test start http://localhost:4200 cypress:run",
+    "preflight": "npm run build && npm test -- --watch=false --browsers=ChromeHeadless && npm run e2e:ci"
   },
   "private": true,
   "dependencies": {
@@ -39,6 +41,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "^5.9.2"
+    "start-server-and-test": "^2.1.5",
+    "typescript": "^5.9.2",
+    "wait-on": "^9.0.5"
   }
 }

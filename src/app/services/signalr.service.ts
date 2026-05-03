@@ -13,6 +13,7 @@ export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'rec
 })
 export class SignalrService {
   private hubConnection: signalR.HubConnection | null = null;
+  private startConnectionPromise: Promise<void> | null = null;
 
   /** Observable connection state for the ConnectionStatus component. */
   private connectionStateSubject = new BehaviorSubject<ConnectionState>('disconnected');
@@ -24,7 +25,24 @@ export class SignalrService {
   /** Registry of Subjects per event name to ensure stability and multi-consumer support. */
   private readonly _eventSubjects = new Map<string, Subject<any>>();
 
-  constructor(private zone: NgZone) {}
+  constructor(private zone: NgZone) {
+    if (!environment.production) {
+      if (!(window as any).basta_mock_signalr) {
+          (window as any).basta_mock_signalr = { trigger: () => {} };
+      }
+      
+      (window as any).basta_mock_signalr.trigger = (eventName: string, data: any) => {
+          this.zone.run(() => {
+            const subject = this._eventSubjects.get(eventName);
+            if (subject) {
+              subject.next(data);
+            } else {
+              console.warn(`[SignalR Mock App] No subject registered for ${eventName}`);
+            }
+          });
+      };
+    }
+  }
 
   /**
    * Resets all registered event subjects.
@@ -35,27 +53,42 @@ export class SignalrService {
     // Complete existing subjects to cleanly un-subscribe current listeners
     this._eventSubjects.forEach(subject => subject.complete());
     this._eventSubjects.clear();
-    console.log('[SignalR] Event subjects reset.');
   }
 
   /**
    * Build and start the SignalR connection to the Basta hub.
    */
   async startConnection(): Promise<void> {
-    if (this.hubConnection) {
+    if (this.startConnectionPromise) {
+      return this.startConnectionPromise;
+    }
+
+    if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
+      return Promise.resolve();
+    }
+
+    this.startConnectionPromise = this.internalStartConnection();
+    try {
+      await this.startConnectionPromise;
+    } finally {
+      this.startConnectionPromise = null;
+    }
+  }
+
+  private async internalStartConnection(): Promise<void> {
+    if (!this.hubConnection) {
+      this.hubConnection = this.buildConnection();
+      this.registerConnectionEvents();
+    }
+
+    if (this.hubConnection.state !== signalR.HubConnectionState.Disconnected) {
       return;
     }
 
-    this.hubConnection = this.buildConnection();
-
-    this.registerConnectionEvents();
-
     try {
       this.connectionStateSubject.next('connecting');
-      console.log('[SignalR] Attempting to start connection to:', environment.hubUrl);
       await this.hubConnection.start();
       this.connectionStateSubject.next('connected');
-      console.log('[SignalR] Connection started successfully.');
     } catch (err) {
       this.connectionStateSubject.next('disconnected');
       console.error('[SignalR] Connection failed:', err);
@@ -84,7 +117,6 @@ export class SignalrService {
       this.hubConnection = null;
       this.resetEvents();
       this.connectionStateSubject.next('disconnected');
-      console.log('[SignalR] Disconnected.');
     }
   }
 
@@ -98,10 +130,8 @@ export class SignalrService {
       console.error('[SignalR] Invoke failed: No active connection.', { methodName, args });
       throw new Error('[SignalR] No active connection. Call startConnection() first.');
     }
-    console.log(`[SignalR] Invoking: ${methodName}`, args);
     try {
       const result = await this.hubConnection.invoke<T>(methodName, ...args);
-      console.log(`[SignalR] Invoke ${methodName} SUCCESS`, result);
       return result;
     } catch (err) {
       console.error(`[SignalR] Invoke ${methodName} FAILED:`, err);
@@ -168,7 +198,6 @@ export class SignalrService {
     this.hubConnection.onreconnected(() => {
       this.zone.run(() => {
         this.connectionStateSubject.next('connected');
-        console.log('[SignalR] Reconnected.');
       });
     });
 
