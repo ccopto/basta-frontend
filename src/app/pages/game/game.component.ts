@@ -15,7 +15,7 @@ import { AnswerGridComponent } from './answer-grid/answer-grid.component';
 import { ValidationGridComponent } from './validation-grid/validation-grid.component';
 import { RoundResultsComponent } from './round-results/round-results.component';
 
-import { ScoringData, PlayerScore } from '../../models/game.models';
+import { ScoringData, PlayerScore, LeaderboardDto } from '../../models/game.models';
 
 
 @Component({
@@ -141,8 +141,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
     // Listen for Game Over
     this.subscriptions.push(
-      this.signalrService.on<string>('GameOver').subscribe((reason) => {
-        this.handleGameOver(reason);
+      this.signalrService.on<LeaderboardDto>('GameOver').subscribe((data) => {
+        this.handleGameOver(data);
       })
     );
 
@@ -200,10 +200,12 @@ export class GameComponent implements OnInit, OnDestroy {
     console.log(`Round stopped by ${event.callerNickname}. Answers submitted.`);
   }
 
-  private handleGameOver(reason: string) {
+  private handleGameOver(data: LeaderboardDto) {
     this.roundActive.set(false);
     this.isLocked.set(true);
-    this.gameOverReason.set(reason);
+    this.router.navigate(['/game-over', this.gameCode], { 
+      state: { leaderboard: data } 
+    });
   }
 
 

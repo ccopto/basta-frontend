@@ -1,0 +1,140 @@
+.leaderboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.podium-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1rem;
+  height: 300px;
+  margin-top: 2rem;
+}
+
+.podium-spot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 150px;
+}
+
+.podium-spot.empty {
+  visibility: hidden;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.nickname {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.score {
+  font-size: 0.9rem;
+  color: var(--primary-light);
+  font-weight: 600;
+}
+
+.pedestal {
+  width: 100%;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1rem;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.rank-num {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* Spot-Specific Heights and Colors */
+
+/* 2nd Place (Left) */
+.spot-0 .pedestal {
+  height: 120px;
+  background: linear-gradient(180deg, #94a3b8 0%, #475569 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 1st Place (Center) */
+.spot-1 .pedestal {
+  height: 180px;
+  background: linear-gradient(180deg, #facc15 0%, #ca8a04 100%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.spot-1 .nickname {
+  font-size: 1.4rem;
+  color: #fef08a;
+}
+
+/* 3rd Place (Right) */
+.spot-2 .pedestal {
+  height: 80px;
+  background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Remaining List */
+.remaining-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  transition: transform 0.2s;
+}
+
+.list-item:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rank {
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.3);
+  width: 40px;
+}
+
+.list-item .nickname {
+  flex: 1;
+  font-size: 1rem;
+}
+
+.list-item .score {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 480px) {
+  .podium-container {
+    height: 250px;
+  }
+  .spot-1 .nickname { font-size: 1.1rem; }
+  .nickname { font-size: 0.9rem; }
+}
