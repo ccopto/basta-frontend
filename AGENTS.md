@@ -25,12 +25,9 @@ Node is installed via Homebrew. If `node` or `npm` is not found on PATH, try:
 /opt/homebrew/bin/node
 ```
 
-### Git GPG Signing Is Broken
+### GPG Signing
 
-Always commit with:
-```bash
-git -c commit.gpgsign=false commit -m "..."
-```
+All commits must be GPG signed. If signing fails, stop and inform the user. Do NOT use the `-c commit.gpgsign=false` override.
 
 ---
 
@@ -71,11 +68,11 @@ One commit per logical change. Never batch unrelated changes into a single commi
 
 ```bash
 # Good
-git -c commit.gpgsign=false commit -m "feat(lobby): add create-game form component"
-git -c commit.gpgsign=false commit -m "feat(lobby): wire CreateGame API call in GameService"
+git commit -m "feat(lobby): add create-game form component"
+git commit -m "feat(lobby): wire CreateGame API call in GameService"
 
 # Bad
-git -c commit.gpgsign=false commit -m "feat: implement lobby page"  ← too broad
+git commit -m "feat: implement lobby page"  ← too broad
 ```
 
 ### Conventional Commits
