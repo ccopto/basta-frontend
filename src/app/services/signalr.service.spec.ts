@@ -115,4 +115,27 @@ describe('SignalrService', () => {
     // Since we cleared it, s2 should be a new Subject, not the same as s1
     expect(s1).not.toBe(s2);
   });
+
+  it('should clear replay buffer for new subscribers after resetEvents', async () => {
+    await service.startConnection();
+    const eventName = 'GameStarted';
+    const s1 = service.on<any>(eventName);
+    
+    // Simulate event firing
+    const onSpy = mockHubConnection.on as jasmine.Spy;
+    const callback = onSpy.calls.argsFor(0)[1];
+    callback('stale event');
+    
+    // Now call reset
+    service.resetEvents();
+    
+    // Request event again
+    const s2 = service.on<any>(eventName);
+    
+    // Subscribe to the new subject
+    let received = false;
+    s2.subscribe(() => received = true);
+    
+    expect(received).toBeFalse();
+  });
 });
