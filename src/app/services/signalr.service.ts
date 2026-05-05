@@ -79,6 +79,15 @@ export class SignalrService {
     if (!this.hubConnection) {
       this.hubConnection = this.buildConnection();
       this.registerConnectionEvents();
+      
+      // Re-register any listeners that were requested before the connection was built
+      this._eventSubjects.forEach((subject, eventName) => {
+        this.hubConnection!.on(eventName, (data: any) => {
+          this.zone.run(() => {
+            subject.next(data);
+          });
+        });
+      });
     }
 
     if (this.hubConnection.state !== signalR.HubConnectionState.Disconnected) {
