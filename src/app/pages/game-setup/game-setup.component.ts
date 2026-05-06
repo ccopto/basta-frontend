@@ -388,14 +388,18 @@ export class GameSetupComponent implements OnInit, OnDestroy {
   private loadData() {
     this.loading = true;
     const lang = 'en'; // Hardcoded till language selection in Epic 5
+    console.info(`[Setup] Starting data load for game: ${this.gameCode}`);
     
     // FE-2: Refactor using switchMap to avoid nested subscribes anti-pattern
     this.gameService.getGame(this.gameCode).pipe(
       tap((snapshot) => {
-        this.lobbyState = snapshot;
-        // FE-5: Map backend 'totalRounds' (which tracks winning condition/rounds) to local 'totalRounds' signal
-        this.totalRounds.set(snapshot.totalRounds);
-        this.timerDuration.set(snapshot.timerDuration);
+        this.zone.run(() => {
+          this.lobbyState = snapshot;
+          // FE-5: Map backend 'totalRounds' (which tracks winning condition/rounds) to local 'totalRounds' signal
+          this.totalRounds.set(snapshot.totalRounds);
+          this.timerDuration.set(snapshot.timerDuration);
+          this.cdr.detectChanges();
+        });
       }),
       switchMap(() => {
         return this.gameService.getCategories(lang);
@@ -403,8 +407,12 @@ export class GameSetupComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (cats) => {
-        this.availableCategories = cats;
-        this.loading = false;
+        this.zone.run(() => {
+          console.info(`[Setup] Successfully loaded ${cats.length} categories.`);
+          this.availableCategories = cats;
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
         console.error('[Setup] Error loading config:', err);
