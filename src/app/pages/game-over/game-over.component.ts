@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { LeaderboardDto } from '../../models/game.models';
 import { LeaderboardComponent } from './components/leaderboard/leaderboard.component';
+import { GameResultsService } from '../../services/game-results.service';
 
 @Component({
   selector: 'app-game-over',
@@ -13,12 +14,12 @@ import { LeaderboardComponent } from './components/leaderboard/leaderboard.compo
       <header class="header text-center mb-10">
         <h1 class="text-5xl font-black text-white mb-2">GAME OVER</h1>
         <p class="text-xl text-primary-light font-semibold uppercase tracking-widest">
-          {{ leaderboard?.reason || 'Session Finished' }}
+          {{ leaderboard()?.reason || 'Session Finished' }}
         </p>
       </header>
 
       <main class="content mb-12">
-        <app-leaderboard [players]="leaderboard?.players || []"></app-leaderboard>
+        <app-leaderboard [players]="leaderboard()?.players || []"></app-leaderboard>
       </main>
 
       <footer class="actions flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -50,15 +51,16 @@ import { LeaderboardComponent } from './components/leaderboard/leaderboard.compo
   `]
 })
 export class GameOverComponent implements OnInit {
-  public leaderboard?: LeaderboardDto;
+  public leaderboard = this.gameResultsService.results;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private gameResultsService: GameResultsService
+  ) {}
 
   ngOnInit() {
-    this.leaderboard = window.history.state?.['leaderboard'];
-
-    if (!this.leaderboard) {
-      console.warn('No leaderboard data found in router state. Redirecting to home.');
+    if (!this.leaderboard()) {
+      console.warn('No leaderboard data found in GameResultsService. Redirecting to home.');
       this.router.navigate(['/home']);
     }
   }

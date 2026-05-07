@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
 import { GameService } from '../../services/game.service';
+import { GameResultsService } from '../../services/game-results.service';
 import { RoundStartedEvent, RoundStoppedEvent, AnswerMap } from '../../models/game.models';
 import { CategoryDto } from '../../models/lobby.models';
 import { Subscription } from 'rxjs';
@@ -43,7 +44,6 @@ export class GameComponent implements OnInit, OnDestroy {
   public timerProgress = signal<number>(100);
   public serverTime = signal<string>('');
   public timerDuration = signal<number>(60);
-  public gameOverReason = signal<string | null>(null);
   public currentPhase = signal<'playing' | 'validating' | 'results'>('playing');
   
   // --- Phase Data Signals ---
@@ -69,7 +69,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
     private signalrService: SignalrService,
     public playerState: PlayerStateService,
-    private gameService: GameService
+    private gameService: GameService,
+    private gameResultsService: GameResultsService
 
   ) {}
 
@@ -197,15 +198,13 @@ export class GameComponent implements OnInit, OnDestroy {
     
     // Note: Navigation to scoring will happen in the next Story/Epic
     // For now we stay on this page showing locked answers
-    console.log(`Round stopped by ${event.callerNickname}. Answers submitted.`);
   }
 
   private handleGameOver(data: LeaderboardDto) {
     this.roundActive.set(false);
     this.isLocked.set(true);
-    this.router.navigate(['/game-over', this.gameCode], { 
-      state: { leaderboard: data } 
-    });
+    this.gameResultsService.setResults(data);
+    this.router.navigate(['/game-over', this.gameCode]);
   }
 
 
