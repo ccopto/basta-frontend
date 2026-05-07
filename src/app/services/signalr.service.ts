@@ -36,12 +36,11 @@ export class SignalrService {
       
       (window as any).basta_mock_signalr.trigger = (eventName: string, data: any) => {
           this.zone.run(() => {
-            const subject = this._eventSubjects.get(eventName);
-            if (subject) {
-              subject.next(data);
-            } else {
-              console.warn(`[SignalR Mock App] No subject registered for ${eventName}`);
+            if (!this._eventSubjects.has(eventName)) {
+              this._eventSubjects.set(eventName, new ReplaySubject<any>(1));
             }
+            const subject = this._eventSubjects.get(eventName)!;
+            subject.next(data);
           });
       };
     }
