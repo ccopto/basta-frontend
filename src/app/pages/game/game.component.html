@@ -1,15 +1,5 @@
 <div class="game-container page-container">
   
-  @if (gameOverReason()) {
-    <div class="game-over-overlay glass">
-      <div class="game-over-card card">
-        <h2>Game Over</h2>
-        <p>{{ gameOverReason() }}</p>
-        <button class="btn btn-primary" (click)="router.navigate(['/home'])">Back to Menu</button>
-      </div>
-    </div>
-  }
-  
   <!-- Letter Overlay & Display -->
   <app-letter-display 
     [letter]="currentLetter()" 

@@ -3,6 +3,7 @@ import { GameComponent } from './game.component';
 import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
 import { GameService } from '../../services/game.service';
+import { GameResultsService } from '../../services/game-results.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { FormsModule } from '@angular/forms';
@@ -21,6 +22,7 @@ describe('GameComponent', () => {
   let mockPlayerState: jasmine.SpyObj<PlayerStateService>;
   let mockGameService: jasmine.SpyObj<GameService>;
   let mockRouter: jasmine.SpyObj<Router>;
+  let mockGameResultsService: jasmine.SpyObj<GameResultsService>;
   
   const roundStartedSubject = new Subject<any>();
   const roundStoppedSubject = new Subject<any>();
@@ -41,6 +43,8 @@ describe('GameComponent', () => {
     mockGameService = jasmine.createSpyObj('GameService', ['getGame', 'getCategories']);
     mockGameService.getCategories.and.returnValue(of([{ categoryId: 1, name: 'Name' }]));
     mockGameService.getGame.and.returnValue(of({ selectedCategoryIds: [1] } as any));
+
+    mockGameResultsService = jasmine.createSpyObj('GameResultsService', ['setResults']);
 
     mockSignalr.on.and.callFake(((event: string) => {
       if (event === 'RoundStarted') return roundStartedSubject;
@@ -72,6 +76,7 @@ describe('GameComponent', () => {
         { provide: PlayerStateService, useValue: mockPlayerState },
         { provide: GameService, useValue: mockGameService },
         { provide: Router, useValue: mockRouter },
+        { provide: GameResultsService, useValue: mockGameResultsService },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -144,9 +149,8 @@ describe('GameComponent', () => {
 
     expect(component.isRoundRunning).toBeFalse();
     expect(component.isLocked()).toBeTrue();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/game-over', 'ABCD'], { 
-      state: { leaderboard: mockLeaderboard } 
-    });
+    expect(mockGameResultsService.setResults).toHaveBeenCalledWith(mockLeaderboard as any);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/game-over', 'ABCD']);
   }));
 
 
