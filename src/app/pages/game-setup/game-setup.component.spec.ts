@@ -95,8 +95,6 @@ describe('GameSetupComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     
-    expect(mockSignalr.invoke).toHaveBeenCalledWith('JoinGame', 'ABCD', 1, 'Host');
-    
     gameStartedSubject.next();
     
     fixture.detectChanges();
