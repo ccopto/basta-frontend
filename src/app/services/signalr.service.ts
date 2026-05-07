@@ -25,6 +25,9 @@ export class SignalrService {
   /** Registry of Subjects per event name to ensure stability and multi-consumer support. */
   private readonly _eventSubjects = new Map<string, Subject<any>>();
 
+  /** Set of event names that have been registered with the underlying HubConnection.on() */
+  private registeredHubMethods = new Set<string>();
+
   constructor(private zone: NgZone) {
     if (!environment.production) {
       if (!(window as any).basta_mock_signalr) {
@@ -82,11 +85,14 @@ export class SignalrService {
       
       // Re-register any listeners that were requested before the connection was built
       this._eventSubjects.forEach((subject, eventName) => {
-        this.hubConnection!.on(eventName, (data: any) => {
-          this.zone.run(() => {
-            subject.next(data);
+        if (!this.registeredHubMethods.has(eventName)) {
+          this.hubConnection!.on(eventName, (data: any) => {
+            this.zone.run(() => {
+              subject.next(data);
+            });
           });
-        });
+          this.registeredHubMethods.add(eventName);
+        }
       });
     }
 
@@ -95,11 +101,11 @@ export class SignalrService {
     }
 
     try {
-      this.connectionStateSubject.next('connecting');
+      this.zone.run(() => this.connectionStateSubject.next('connecting'));
       await this.hubConnection.start();
-      this.connectionStateSubject.next('connected');
+      this.zone.run(() => this.connectionStateSubject.next('connected'));
     } catch (err) {
-      this.connectionStateSubject.next('disconnected');
+      this.zone.run(() => this.connectionStateSubject.next('disconnected'));
       console.error('[SignalR] Connection failed:', err);
       throw err;
     }
@@ -160,14 +166,13 @@ export class SignalrService {
     }
     const subject = this._eventSubjects.get(eventName)!;
 
-    // Remove any previous handler to avoid duplicates, then register the shared one
-    this.hubConnection?.off(eventName);
-    if (this.hubConnection) {
+    if (this.hubConnection && !this.registeredHubMethods.has(eventName)) {
       this.hubConnection.on(eventName, (data: T) => {
         this.zone.run(() => {
           subject.next(data);
         });
       });
+      this.registeredHubMethods.add(eventName);
     }
     return subject;
   }
