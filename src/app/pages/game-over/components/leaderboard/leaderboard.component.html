@@ -1,7 +1,7 @@
 <div class="leaderboard-container">
   <!-- Podium for Top 3 -->
   <div class="podium-container">
-    @for (player of podium; track $index) {
+    @for (player of podium(); track $index) {
       <div class="podium-spot" [ngClass]="'spot-' + $index" [class.empty]="!player">
         @if (player) {
           <div class="player-info animate-scale-up">
@@ -17,9 +17,9 @@
   </div>
 
   <!-- List for Rank 4+ -->
-  @if (remaining.length > 0) {
+  @if (remaining().length > 0) {
     <div class="remaining-list glass-panel animate-slide-up">
-      @for (player of remaining; track player.userId) {
+      @for (player of remaining(); track player.userId) {
         <div class="list-item">
           <span class="rank">#{{ player.rank }}</span>
           <span class="nickname">{{ player.nickname }}</span>
