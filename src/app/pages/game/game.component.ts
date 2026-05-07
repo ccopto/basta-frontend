@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
 import { GameService } from '../../services/game.service';
+import { GameResultsService } from '../../services/game-results.service';
 import { RoundStartedEvent, RoundStoppedEvent, AnswerMap } from '../../models/game.models';
 import { CategoryDto } from '../../models/lobby.models';
 import { Subscription } from 'rxjs';
@@ -15,7 +16,7 @@ import { AnswerGridComponent } from './answer-grid/answer-grid.component';
 import { ValidationGridComponent } from './validation-grid/validation-grid.component';
 import { RoundResultsComponent } from './round-results/round-results.component';
 
-import { ScoringData, PlayerScore } from '../../models/game.models';
+import { ScoringData, PlayerScore, LeaderboardDto } from '../../models/game.models';
 
 
 @Component({
@@ -43,7 +44,6 @@ export class GameComponent implements OnInit, OnDestroy {
   public timerProgress = signal<number>(100);
   public serverTime = signal<string>('');
   public timerDuration = signal<number>(60);
-  public gameOverReason = signal<string | null>(null);
   public currentPhase = signal<'playing' | 'validating' | 'results'>('playing');
   
   // --- Phase Data Signals ---
@@ -69,7 +69,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
     private signalrService: SignalrService,
     public playerState: PlayerStateService,
-    private gameService: GameService
+    private gameService: GameService,
+    private gameResultsService: GameResultsService
 
   ) {}
 
@@ -141,8 +142,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
     // Listen for Game Over
     this.subscriptions.push(
-      this.signalrService.on<string>('GameOver').subscribe((reason) => {
-        this.handleGameOver(reason);
+      this.signalrService.on<LeaderboardDto>('GameOver').subscribe((data) => {
+        this.handleGameOver(data);
       })
     );
 
@@ -197,13 +198,13 @@ export class GameComponent implements OnInit, OnDestroy {
     
     // Note: Navigation to scoring will happen in the next Story/Epic
     // For now we stay on this page showing locked answers
-    console.log(`Round stopped by ${event.callerNickname}. Answers submitted.`);
   }
 
-  private handleGameOver(reason: string) {
+  private handleGameOver(data: LeaderboardDto) {
     this.roundActive.set(false);
     this.isLocked.set(true);
-    this.gameOverReason.set(reason);
+    this.gameResultsService.setResults(data);
+    this.router.navigate(['/game-over', this.gameCode]);
   }
 
 

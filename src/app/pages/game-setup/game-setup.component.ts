@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -352,7 +352,9 @@ export class GameSetupComponent implements OnInit, OnDestroy {
     private playerState: PlayerStateService,
     private gameService: GameService,
     private signalrService: SignalrService,
-    private router: Router
+    private router: Router,
+    private zone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -364,7 +366,7 @@ export class GameSetupComponent implements OnInit, OnDestroy {
     
     this.gameCode = state.gameCode;
     this.loadData();
-    this.initializeConnection(state.userId, state.nickname);
+    this.initializeConnection();
   }
 
   ngOnDestroy() {
@@ -373,10 +375,10 @@ export class GameSetupComponent implements OnInit, OnDestroy {
     this.signalrService.off('GameStarted');
   }
 
-  private async initializeConnection(userId: number, nickname: string) {
+  private async initializeConnection() {
     try {
       await this.signalrService.startConnection();
-      await this.signalrService.invoke('JoinGame', this.gameCode, userId, nickname);
+      // Host has already joined via LobbyComponent; redundant JoinGame removed.
       this.registerSignalR();
     } catch (err) {
       this.handleError('Failed to connect to the game server.');
@@ -390,10 +392,14 @@ export class GameSetupComponent implements OnInit, OnDestroy {
     // FE-2: Refactor using switchMap to avoid nested subscribes anti-pattern
     this.gameService.getGame(this.gameCode).pipe(
       tap((snapshot) => {
-        this.lobbyState = snapshot;
-        // FE-5: Map backend 'totalRounds' (which tracks winning condition/rounds) to local 'totalRounds' signal
-        this.totalRounds.set(snapshot.totalRounds);
-        this.timerDuration.set(snapshot.timerDuration);
+        // Architectural note: Wrapping in zone.run to ensure async stability in complex test scenarios
+        this.zone.run(() => {
+          this.lobbyState = snapshot;
+          // FE-5: Map backend 'totalRounds' (which tracks winning condition/rounds) to local 'totalRounds' signal
+          this.totalRounds.set(snapshot.totalRounds);
+          this.timerDuration.set(snapshot.timerDuration);
+          this.cdr.detectChanges();
+        });
       }),
       switchMap(() => {
         return this.gameService.getCategories(lang);
@@ -401,11 +407,13 @@ export class GameSetupComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (cats) => {
-        this.availableCategories = cats;
-        this.loading = false;
+        this.zone.run(() => {
+          this.availableCategories = cats;
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
-        console.error('[Setup] Error loading config:', err);
         this.handleError('Failed to load configuration.');
       }
     });
@@ -468,13 +476,19 @@ export class GameSetupComponent implements OnInit, OnDestroy {
       // FE-3: Reset isStarting on success path to avoid stuck button if navigation is delayed
       this.isStarting = false;
     } catch (err: any) {
-      this.errorMessage = err.message || 'Failed to start the game.';
-      this.isStarting = false;
+      this.zone.run(() => {
+        this.errorMessage = err.message || 'Failed to start the game.';
+        this.isStarting = false;
+        this.cdr.detectChanges();
+      });
     }
   }
 
   private handleError(msg: string) {
-    this.errorMessage = msg;
-    this.loading = false;
+    this.zone.run(() => {
+      this.errorMessage = msg;
+      this.loading = false;
+      this.cdr.detectChanges();
+    });
   }
 }

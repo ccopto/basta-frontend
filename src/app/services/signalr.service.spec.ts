@@ -115,4 +115,57 @@ describe('SignalrService', () => {
     // Since we cleared it, s2 should be a new Subject, not the same as s1
     expect(s1).not.toBe(s2);
   });
+
+  it('should clear replay buffer for new subscribers after resetEvents', async () => {
+    await service.startConnection();
+    const eventName = 'GameStarted';
+    const s1 = service.on<any>(eventName);
+    
+    // Simulate event firing
+    const onSpy = mockHubConnection.on as jasmine.Spy;
+    const callback = onSpy.calls.argsFor(0)[1];
+    callback('stale event');
+    
+    // Now call reset
+    service.resetEvents();
+    
+    // Request event again
+    const s2 = service.on<any>(eventName);
+    
+    // Subscribe to the new subject
+    let received = false;
+    s2.subscribe(() => received = true);
+    
+    expect(received).toBeFalse();
+  });
+
+  it('should re-register proactive listeners when connection is started', async () => {
+    // 1. Call on() BEFORE startConnection() is called
+    const eventName = 'LobbyUpdate';
+    const subject = service.on<string>(eventName);
+    
+    let receivedData = '';
+    subject.subscribe(data => receivedData = data);
+    
+    // At this point, hubConnection is null, so it couldn't have called hubConnection.on
+    // Now start the connection
+    await service.startConnection();
+    
+    // Now the connection is built, verify that the listener was registered
+    const onSpy = mockHubConnection.on as jasmine.Spy;
+    // Find the callback that was registered for 'LobbyUpdate'
+    const callArgs = onSpy.calls.allArgs().find(args => args[0] === eventName);
+    expect(callArgs).toBeDefined('Listener was not registered on the hubConnection');
+    
+    const callback = callArgs![1];
+    
+    // Simulate event firing from SignalR
+    const zone = TestBed.inject(NgZone);
+    zone.runOutsideAngular(() => {
+      callback('sync success');
+    });
+    
+    // Verify our proactive subscriber received the data
+    expect(receivedData).toBe('sync success');
+  });
 });

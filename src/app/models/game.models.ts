@@ -40,3 +40,15 @@ export interface PlayerScore {
   answers: AnswerScore[];
 }
 
+export interface LeaderboardPlayer {
+  userId: number;
+  nickname: string;
+  cumulativeScore: number;
+  rank: number;
+}
+
+export interface LeaderboardDto {
+  reason: string;
+  players: LeaderboardPlayer[];
+}
+

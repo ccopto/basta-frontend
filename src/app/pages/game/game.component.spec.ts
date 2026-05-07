@@ -3,7 +3,8 @@ import { GameComponent } from './game.component';
 import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
 import { GameService } from '../../services/game.service';
-import { ActivatedRoute } from '@angular/router';
+import { GameResultsService } from '../../services/game-results.service';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { LetterDisplayComponent } from './letter-display/letter-display.component';
@@ -20,15 +21,18 @@ describe('GameComponent', () => {
   let mockSignalr: jasmine.SpyObj<SignalrService>;
   let mockPlayerState: jasmine.SpyObj<PlayerStateService>;
   let mockGameService: jasmine.SpyObj<GameService>;
+  let mockRouter: jasmine.SpyObj<Router>;
+  let mockGameResultsService: jasmine.SpyObj<GameResultsService>;
   
   const roundStartedSubject = new Subject<any>();
   const roundStoppedSubject = new Subject<any>();
   const lobbyUpdateSubject = new Subject<any>();
-  const gameOverSubject = new Subject<string>();
+  const gameOverSubject = new Subject<any>();
   const displayScoringSubject = new Subject<any>();
   const receiveGameScoreSubject = new Subject<any>();
 
   beforeEach(async () => {
+    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off', 'resetEvents'], {
         currentGameCode: null
     });
@@ -39,6 +43,8 @@ describe('GameComponent', () => {
     mockGameService = jasmine.createSpyObj('GameService', ['getGame', 'getCategories']);
     mockGameService.getCategories.and.returnValue(of([{ categoryId: 1, name: 'Name' }]));
     mockGameService.getGame.and.returnValue(of({ selectedCategoryIds: [1] } as any));
+
+    mockGameResultsService = jasmine.createSpyObj('GameResultsService', ['setResults']);
 
     mockSignalr.on.and.callFake(((event: string) => {
       if (event === 'RoundStarted') return roundStartedSubject;
@@ -69,6 +75,8 @@ describe('GameComponent', () => {
         { provide: SignalrService, useValue: mockSignalr },
         { provide: PlayerStateService, useValue: mockPlayerState },
         { provide: GameService, useValue: mockGameService },
+        { provide: Router, useValue: mockRouter },
+        { provide: GameResultsService, useValue: mockGameResultsService },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -134,18 +142,15 @@ describe('GameComponent', () => {
   }));
 
   it('should handle GameOver event', fakeAsync(() => {
-    gameOverSubject.next('No more letters');
+    const mockLeaderboard = { reason: 'No more letters', players: [] };
+    gameOverSubject.next(mockLeaderboard);
     tick();
     fixture.detectChanges();
 
     expect(component.isRoundRunning).toBeFalse();
     expect(component.isLocked()).toBeTrue();
-    expect(component.gameOverReason()).toBe('No more letters');
-    
-    const overlay = fixture.nativeElement.querySelector('.game-over-overlay');
-    expect(overlay).toBeTruthy();
-    expect(overlay.textContent).toContain('Game Over');
-    expect(overlay.textContent).toContain('No more letters');
+    expect(mockGameResultsService.setResults).toHaveBeenCalledWith(mockLeaderboard as any);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/game-over', 'ABCD']);
   }));
 
 
