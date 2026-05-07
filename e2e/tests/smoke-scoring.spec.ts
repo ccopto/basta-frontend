@@ -21,6 +21,9 @@ test.describe('Scoring Smoke Test', () => {
 
     // 3. Navigate and wait for init
     await page.goto(`/game/${GAME_CODE}`);
+
+    // Wait for the SignalR mock to be available
+    await page.waitForFunction(() => !!(window as any).basta_mock_signalr, { timeout: 15_000 });
   });
 
   test('should display validation and results phases', async ({
@@ -54,6 +57,6 @@ test.describe('Scoring Smoke Test', () => {
 
     // 7. Assert Results UI
     await expect(page.locator('app-round-results')).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText('10')).toBeVisible();
+    await expect(page.getByText('+10 pts')).toBeVisible();
   });
 });

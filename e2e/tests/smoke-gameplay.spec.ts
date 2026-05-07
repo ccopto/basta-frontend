@@ -21,6 +21,9 @@ test.describe('Gameplay Smoke Test', () => {
 
     // 3. Navigate and wait for init
     await page.goto(`/game/${GAME_CODE}`);
+
+    // Wait for the SignalR mock to be available
+    await page.waitForFunction(() => !!(window as any).basta_mock_signalr, { timeout: 15_000 });
   });
 
   test('should start a round, show letter, and disable inputs on Basta call', async ({
@@ -36,7 +39,7 @@ test.describe('Gameplay Smoke Test', () => {
     });
 
     // 5. Assert UI state
-    await expect(page.getByText('M', { exact: true })).toBeVisible();
+    await expect(page.locator('app-letter-display')).toContainText('M', { timeout: 10_000 });
     const input = page.locator('input').first();
     await expect(input).toBeVisible();
     await expect(input).toBeEnabled();

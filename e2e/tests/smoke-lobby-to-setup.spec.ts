@@ -36,16 +36,11 @@ test.describe('Lobby to Setup Navigation Smoke Test', () => {
 
     await expect(page).toHaveURL(new RegExp(`/setup/${GAME_CODE}`));
 
-    // Wait for elements to be visible or error to appear
+    // Wait for elements to be visible
     await expect(page.locator('.spinner')).not.toBeVisible({ timeout: 10_000 });
     
-    // Explicitly check for setup form or error message
+    // Explicitly check for setup form
     const setupForm = page.locator('.setup-form');
-    const errorMsg = page.locator('.error-msg');
-    
-    await expect(setupForm.or(errorMsg)).toBeVisible({ timeout: 10_000 });
-    
-    // If it's a smoke test and we expect success:
-    await expect(setupForm).toBeVisible();
+    await expect(setupForm).toBeVisible({ timeout: 10_000 });
   });
 });

@@ -3,7 +3,7 @@ import { test, expect } from '../fixtures/basta-fixtures';
 test.describe('Smoke Navigation', () => {
   test('should load the home page and have the title', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('Basta')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Basta/i })).toBeVisible();
     await expect(page.getByText('Online')).toBeVisible();
   });
 

@@ -35,13 +35,9 @@ test.describe('Setup Smoke Test', () => {
     
     // Assert form is visible
     const setupForm = page.locator('.setup-form');
-    const errorMsg = page.locator('.error-msg');
     
-    // Either form or error should be visible
-    await expect(setupForm.or(errorMsg)).toBeVisible({ timeout: 10_000 });
-
     // Success path assertion
-    await expect(setupForm).toBeVisible();
-    await expect(page.locator('.cat-name')).toContainText('Fruits');
+    await expect(setupForm).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('.cat-name').first()).toContainText('Fruits');
   });
 });
