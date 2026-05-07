@@ -51,3 +51,7 @@ AGENTS.md
 *.txt
 test_output.txt
 server.log
+
+# Playwright
+/playwright-report/
+/test-results/
