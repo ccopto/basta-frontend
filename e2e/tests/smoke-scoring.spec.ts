@@ -18,6 +18,7 @@ test.describe('Scoring Smoke Test', () => {
       selectedCategoryIds: [1],
       gameCode: GAME_CODE,
     });
+    await mocks.signalRNegotiate();
 
     // 3. Navigate and wait for init
     await page.goto(`/game/${GAME_CODE}`);
