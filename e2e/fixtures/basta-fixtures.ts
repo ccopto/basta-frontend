@@ -7,13 +7,14 @@ import {
   mockCreateGame,
   mockSignalRNegotiate,
 } from '../helpers/api-mocks';
+import { CategoryDto, LobbySnapshot } from '../../src/app/models/lobby.models';
 
 type BastaFixtures = {
   triggerSignalR: (eventName: string, data: unknown) => Promise<void>;
   seedPlayerState: (state: BastaPlayerState) => Promise<void>;
   mocks: {
-    categories: (cats?: any) => Promise<void>;
-    game: (code: string, body?: any) => Promise<void>;
+    categories: (cats?: CategoryDto[]) => Promise<void>;
+    game: (code: string, body?: Partial<LobbySnapshot>) => Promise<void>;
     createGame: (code: string, hostId?: number) => Promise<void>;
     signalRNegotiate: () => Promise<void>;
   };
