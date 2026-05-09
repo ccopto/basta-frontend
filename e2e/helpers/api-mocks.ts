@@ -13,6 +13,10 @@ export const DEFAULT_LOBBY_SNAPSHOT = {
   hostUserId: 1,
 };
 
+export function makeDefaultLobbySnapshot(gameCode: string) {
+  return { ...DEFAULT_LOBBY_SNAPSHOT, gameCode };
+}
+
 export const DEFAULT_CATEGORIES = [
   { categoryId: 1, name: 'Fruits' },
   { categoryId: 2, name: 'Animals' },
@@ -24,9 +28,10 @@ export async function mockGetCategories(page: Page, categories = DEFAULT_CATEGOR
   );
 }
 
-export async function mockGetGame(page: Page, gameCode: string, body = DEFAULT_LOBBY_SNAPSHOT) {
+export async function mockGetGame(page: Page, gameCode: string, body?: any) {
+  const responseBody = body || makeDefaultLobbySnapshot(gameCode);
   await page.route(`**/api/games/${gameCode}`, (route) =>
-    route.fulfill({ json: body })
+    route.fulfill({ json: responseBody })
   );
 }
 
