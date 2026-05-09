@@ -83,8 +83,11 @@ git commit -m "feat: implement lobby page"  ← too broad
 ## Testing Conventions
 
 - Unit tests with **Jasmine + Karma** (Angular default).
-- Test each service and component in isolation using `TestBed` and `HttpClientTestingModule`.
-- For SignalR: mock the `HubConnection` in service tests.
+- E2E tests with **Playwright** (`e2e/` directory).
+- Import `{ test, expect }` from `e2e/fixtures/basta-fixtures.ts`, not from `@playwright/test` directly.
+- Use `page.addInitScript()` to seed `sessionStorage` before navigation.
+- Use `triggerSignalR(page, eventName, data)` from `e2e/helpers/signalr.ts` to fire mock hub events.
+- All API mocking is done via `page.route()`. Reusable mocks live in `e2e/helpers/api-mocks.ts`.
 
 ---
 
@@ -94,4 +97,4 @@ Before pushing any code or creating a PR, the following must be verified locally
 
 1. `npm run build` must pass (to catch Angular template errors).
 2. `npm test` must pass (all unit tests must succeed).
-3. `npm run e2e:ci` must pass (all E2E smoke tests must succeed).
+3. `npm run e2e:ci` must pass (all Playwright E2E smoke tests must succeed).

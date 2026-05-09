@@ -34,14 +34,19 @@ export class SignalrService {
           (window as any).basta_mock_signalr = { trigger: () => {} };
       }
       
+      // MOCK TRIGGER
+      // Note: We intentionally use ReplaySubject(1) here so that if a test fires an event
+      // before the Angular component has fully initialized and subscribed, the event
+      // is retained and replayed to the component once it subscribes.
+      // Important: To prevent cross-test leakage, `basta_mock_signalr` is implicitly reset 
+      // by Playwright on each page navigation, and internal subjects can be cleared via resetEvents().
       (window as any).basta_mock_signalr.trigger = (eventName: string, data: any) => {
           this.zone.run(() => {
-            const subject = this._eventSubjects.get(eventName);
-            if (subject) {
-              subject.next(data);
-            } else {
-              console.warn(`[SignalR Mock App] No subject registered for ${eventName}`);
+            if (!this._eventSubjects.has(eventName)) {
+              this._eventSubjects.set(eventName, new ReplaySubject<any>(1));
             }
+            const subject = this._eventSubjects.get(eventName)!;
+            subject.next(data);
           });
       };
     }
