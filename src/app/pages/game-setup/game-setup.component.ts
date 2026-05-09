@@ -8,19 +8,20 @@ import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
 import { CategoryDto, LobbySnapshot } from '../../models/lobby.models';
 import { GAME_DEFAULTS } from '../../constants/game.constants';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @Component({
   selector: 'app-game-setup',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="setup-wrapper">
       <div class="glass-card setup-card animate-scale-in">
         <header class="setup-header">
           <h1 class="game-code">{{ gameCode }}</h1>
-          <h2>Game Setup</h2>
-          <p class="subtitle">Configure the categories for this match.</p>
+          <h2>{{ 'SETUP.TITLE' | translate }}</h2>
+          <p class="subtitle">{{ 'SETUP.CATEGORIES' | translate }}</p>
         </header>
 
         <div *ngIf="loading" class="loading-state">
@@ -36,7 +37,7 @@ import { GAME_DEFAULTS } from '../../constants/game.constants';
           <!-- Interactive Settings -->
           <div class="settings-grid">
             <div class="setting-item animate-fade-in" style="animation-delay: 100ms">
-              <label>Total Rounds</label>
+              <label>{{ 'SETUP.ROUNDS' | translate }}</label>
               <div class="stepper">
                 <button type="button" class="step-btn" (click)="updateRounds(-1)" [disabled]="totalRounds() <= GAME_DEFAULTS.minRounds">−</button>
                 <div class="step-value-container">
@@ -48,7 +49,7 @@ import { GAME_DEFAULTS } from '../../constants/game.constants';
             </div>
             
             <div class="setting-item animate-fade-in" style="animation-delay: 200ms">
-              <label>Round Timer</label>
+              <label>{{ 'SETUP.TIMER' | translate }}</label>
               <div class="stepper">
                 <button type="button" class="step-btn" (click)="updateTimer(-15)" [disabled]="timerDuration() <= GAME_DEFAULTS.minTimer">−</button>
                 <div class="step-value-container">
@@ -83,12 +84,12 @@ import { GAME_DEFAULTS } from '../../constants/game.constants';
 
           <footer class="setup-actions">
             <button type="button" class="btn btn-secondary btn-block" (click)="onBack()">
-              Back to Lobby
+              Back
             </button>
             <button type="button" class="btn btn-primary btn-block" 
                     [disabled]="selectedCategoryIds.size === 0 || isStarting" 
                     (click)="onStartGame()">
-              {{ isStarting ? 'Starting...' : 'Start Game' }}
+              {{ (isStarting ? 'HOME.CREATING' : 'SETUP.START_GAME') | translate }}
             </button>
           </footer>
         </form>
@@ -387,7 +388,7 @@ export class GameSetupComponent implements OnInit, OnDestroy {
 
   private loadData() {
     this.loading = true;
-    const lang = 'en'; // Hardcoded till language selection in Epic 5
+    const lang = this.playerState.currentState.language;
     
     // FE-2: Refactor using switchMap to avoid nested subscribes anti-pattern
     this.gameService.getGame(this.gameCode).pipe(
