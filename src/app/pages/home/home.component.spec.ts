@@ -17,7 +17,7 @@ describe('HomeComponent', () => {
   beforeEach(async () => {
     mockGameService = jasmine.createSpyObj('GameService', ['createGame', 'joinGame']);
     mockPlayerState = jasmine.createSpyObj('PlayerStateService', ['updateState', 'clearState'], {
-      currentState: { nickname: '', userId: 0, isHost: false, gameCode: null }
+      currentState: { nickname: '', userId: 0, isHost: false, gameCode: null, language: 'en' }
     });
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
