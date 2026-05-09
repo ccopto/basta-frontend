@@ -1,21 +1,18 @@
 import { test, expect } from '../fixtures/basta-fixtures';
 
 test.describe('Create Game (US-01 / US-03)', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/home');
-  });
-
   test('should render landing page correctly', async ({ page }) => {
+    await page.goto('/home');
     await expect(page.getByRole('heading', { name: /Basta/i })).toBeVisible();
     await expect(page.getByText('Choose a Nickname')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Create Game' })).toBeDisabled();
   });
 
   test('should show validation errors for empty nickname', async ({ page }) => {
+    await page.goto('/home');
     await page.locator('input[formControlName="nickname"]').fill('   ');
     await page.locator('input[formControlName="nickname"]').blur();
-    // Assuming the error class/text based on typical project pattern
-    await expect(page.locator('.error-msg')).toContainText('Nickname is required');
+    await expect(page.locator('[data-cy="nickname-error"]')).toContainText('Nickname is required');
     await expect(page.getByRole('button', { name: 'Create Game' })).toBeDisabled();
   });
 
@@ -23,7 +20,8 @@ test.describe('Create Game (US-01 / US-03)', () => {
     const gameCode = 'PLAYWRIGHT';
     await mocks.createGame(gameCode);
 
-    await page.evaluate(() => sessionStorage.clear());
+    await page.addInitScript(() => sessionStorage.clear());
+    await page.goto('/home');
     await page.locator('input[formControlName="nickname"]').fill('PlaywrightUser');
 
     const responsePromise = page.waitForResponse('**/api/games');
