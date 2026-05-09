@@ -43,7 +43,7 @@ import { PlayerStateService } from '../../services/player-state.service';
                 maxlength="50"
                 autocomplete="off"
               />
-              <div *ngIf="gameForm.get('nickname')?.touched && gameForm.get('nickname')?.invalid" class="error-msg">
+              <div *ngIf="gameForm.get('nickname')?.touched && gameForm.get('nickname')?.invalid" class="error-msg" data-cy="nickname-error">
                 Nickname is required (no just spaces).
               </div>
             </div>
