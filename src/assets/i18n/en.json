@@ -24,6 +24,11 @@
       "JOIN_FAILED": "Could not join. Check the game code and try again."
     }
   },
+  "ERRORS": {
+    "CONNECTION_CONNECTING": "Connecting to server...",
+    "CONNECTION_RECONNECTING": "Connection lost. Reconnecting...",
+    "CONNECTION_DISCONNECTED": "Disconnected. Please refresh."
+  },
   "SETUP": {
     "TITLE": "Game Settings",
     "ROUNDS": "Total Rounds",

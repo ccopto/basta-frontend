@@ -24,6 +24,11 @@
       "JOIN_FAILED": "No se pudo unir. Revisa el código e intenta de nuevo."
     }
   },
+  "ERRORS": {
+    "CONNECTION_CONNECTING": "Conectando al servidor...",
+    "CONNECTION_RECONNECTING": "Conexión perdida. Reconectando...",
+    "CONNECTION_DISCONNECTED": "Desconectado. Por favor recarga."
+  },
   "SETUP": {
     "TITLE": "Configuración",
     "ROUNDS": "Rondas Totales",
