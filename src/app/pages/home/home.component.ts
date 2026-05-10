@@ -371,8 +371,9 @@ export class HomeComponent {
     });
   }
 
-  onLanguageChange(event: any) {
-    const lang = event.target.value;
+  onLanguageChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const lang = target.value;
     this.playerState.updateState({ language: lang });
     
     // Sync both forms
