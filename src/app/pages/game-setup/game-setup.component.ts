@@ -26,7 +26,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
         <div *ngIf="loading" class="loading-state">
           <div class="spinner"></div>
-          <p>Loading configuration...</p>
+          <p>{{ 'HOME.JOINING' | translate }}</p>
         </div>
 
         <div *ngIf="errorMessage" class="error-msg global-error">
@@ -42,7 +42,7 @@ import { TranslateModule } from '@ngx-translate/core';
                 <button type="button" class="step-btn" (click)="updateRounds(-1)" [disabled]="totalRounds() <= GAME_DEFAULTS.minRounds">−</button>
                 <div class="step-value-container">
                   <span class="step-value">{{ totalRounds() }}</span>
-                  <span class="step-unit">rounds</span>
+                  <span class="step-unit">{{ 'SETUP.ROUNDS' | translate }}</span>
                 </div>
                 <button type="button" class="step-btn" (click)="updateRounds(1)" [disabled]="totalRounds() >= GAME_DEFAULTS.maxRounds">+</button>
               </div>
@@ -54,7 +54,7 @@ import { TranslateModule } from '@ngx-translate/core';
                 <button type="button" class="step-btn" (click)="updateTimer(-15)" [disabled]="timerDuration() <= GAME_DEFAULTS.minTimer">−</button>
                 <div class="step-value-container">
                   <span class="step-value">{{ timerDuration() }}</span>
-                  <span class="step-unit">sec</span>
+                  <span class="step-unit">{{ 'SETUP.TIMER_SECONDS' | translate }}</span>
                 </div>
                 <button type="button" class="step-btn" (click)="updateTimer(15)" [disabled]="timerDuration() >= GAME_DEFAULTS.maxTimer">+</button>
               </div>
@@ -64,8 +64,8 @@ import { TranslateModule } from '@ngx-translate/core';
 
           <!-- Categories -->
           <div class="form-group categories-group">
-            <label>Select Categories <span class="required">*</span></label>
-            <p class="hint">Choose at least one category for the game.</p>
+            <label>{{ 'SETUP.CATEGORIES' | translate }} <span class="required">*</span></label>
+            <p class="hint">{{ 'SETUP.SELECTED_CATEGORIES' | translate:{ count: selectedCategoryIds.size } }}</p>
             
             <div class="categories-grid">
               <div class="category-card hover-scale" 
@@ -84,7 +84,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
           <footer class="setup-actions">
             <button type="button" class="btn btn-secondary btn-block" (click)="onBack()">
-              Back
+              {{ 'SETUP.BACK_TO_LOBBY' | translate }}
             </button>
             <button type="button" class="btn btn-primary btn-block" 
                     [disabled]="selectedCategoryIds.size === 0 || isStarting" 

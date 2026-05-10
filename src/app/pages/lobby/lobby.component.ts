@@ -7,29 +7,32 @@ import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
 import { GameService } from '../../services/game.service';
 import { LobbySnapshot } from '../../models/lobby.models';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-lobby',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="lobby-wrapper" data-cy="lobby-component">
       <div class="glass-card lobby-card animate-scale-in">
         <header class="lobby-header">
           <div class="header-tags">
             <span class="tag lang-tag">{{ lobbyState?.language === 'es' ? 'Español' : 'English' }}</span>
-            <span class="tag rounds-tag" *ngIf="lobbyState">🎯 {{ lobbyState.totalRounds }} Rounds</span>
+            <span class="tag rounds-tag" *ngIf="lobbyState">
+              🎯 {{ 'LOBBY.ROUNDS_COUNT' | translate:{ count: lobbyState.totalRounds } }}
+            </span>
           </div>
           <h1 class="game-code" data-cy="game-code-display">{{ gameCode }}</h1>
           <p class="subtitle" *ngIf="lobbyState" data-cy="lobby-loaded">
-            Waiting for players... ({{ lobbyState.players.length }}/5)
+            {{ 'LOBBY.WAITING_FOR_PLAYERS' | translate }} ({{ lobbyState.players.length }}/5)
           </p>
         </header>
 
         <section class="players-section">
           <div *ngIf="!lobbyState && !errorMessage" class="loading-state">
             <div class="spinner"></div>
-            <p>Connecting to game...</p>
+            <p>{{ 'HOME.JOINING' | translate }}</p>
           </div>
           
           <div *ngIf="errorMessage" class="error-msg global-error" data-cy="lobby-error">
@@ -49,7 +52,9 @@ import { LobbySnapshot } from '../../models/lobby.models';
               <div class="player-details">
                 <span class="nickname">{{ p.nickname }}</span>
                 <div class="badges">
-                  <span class="badge me-badge" *ngIf="p.userId === currentUserId">You</span>
+                  <span class="badge me-badge" *ngIf="p.userId === currentUserId">
+                    {{ 'VALIDATION.YOU' | translate }}
+                  </span>
                   <span class="badge offline-badge" *ngIf="!p.isOnline">Offline</span>
                 </div>
               </div>
@@ -58,7 +63,9 @@ import { LobbySnapshot } from '../../models/lobby.models';
             <!-- Empty slots -->
             <div class="player-item empty-slot" *ngFor="let _ of emptySlots">
               <div class="avatar empty-avatar">?</div>
-              <div class="player-details"><span class="nickname">Waiting...</span></div>
+              <div class="player-details">
+                <span class="nickname">{{ 'LOBBY.WAITING_FOR_PLAYERS' | translate }}</span>
+              </div>
             </div>
           </div>
         </section>
@@ -68,20 +75,22 @@ import { LobbySnapshot } from '../../models/lobby.models';
             <button class="btn btn-primary btn-block" 
                     [disabled]="lobbyState.players.length < 2" 
                     (click)="onConfigureGame()">
-              Configure Game
+              {{ 'LOBBY.CONFIGURE_GAME' | translate }}
             </button>
-            <p class="hint" *ngIf="lobbyState.players.length < 2">Need at least 2 players to start</p>
+            <p class="hint" *ngIf="lobbyState.players.length < 2">
+              {{ 'LOBBY.NEED_PLAYERS' | translate }}
+            </p>
           </div>
           
           <div *ngIf="!isHost" class="player-controls">
             <div class="waiting-indicator" data-cy="waiting-indicator">
               <span class="pulse"></span>
-              <p>Waiting for host to start...</p>
+              <p>{{ 'LOBBY.WAITING_FOR_HOST' | translate }}</p>
             </div>
           </div>
           
           <button class="btn btn-secondary btn-block leave-btn" (click)="onLeaveLobby()">
-            Leave Game
+            {{ 'LOBBY.LEAVE_GAME' | translate }}
           </button>
         </footer>
       </div>

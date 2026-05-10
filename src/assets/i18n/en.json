@@ -24,17 +24,61 @@
       "JOIN_FAILED": "Could not join. Check the game code and try again."
     }
   },
-  "ERRORS": {
-    "CONNECTION_CONNECTING": "Connecting to server...",
-    "CONNECTION_RECONNECTING": "Connection lost. Reconnecting...",
-    "CONNECTION_DISCONNECTED": "Disconnected. Please refresh."
+  "LOBBY": {
+    "TITLE": "Game Lobby",
+    "WAITING_FOR_PLAYERS": "Waiting for more players to join...",
+    "READY_TO_START": "Ready to start!",
+    "ROUNDS_COUNT": "{{ count }} Rounds",
+    "NEED_PLAYERS": "Need at least 2 players to start",
+    "CONFIGURE_GAME": "Configure Game",
+    "START_GAME": "Start Game",
+    "LEAVE_GAME": "Leave Game",
+    "WAITING_FOR_HOST": "Waiting for host to start...",
+    "SHARE_CODE": "Share this code with your friends:"
   },
   "SETUP": {
     "TITLE": "Game Settings",
     "ROUNDS": "Total Rounds",
-    "TIMER": "Timer Duration (seconds)",
+    "TIMER": "Timer Duration",
+    "TIMER_SECONDS": "seconds",
     "CATEGORIES": "Select Categories",
+    "SELECTED_CATEGORIES": "{{ count }} categories selected",
     "START_GAME": "Start Game",
-    "WAITING_FOR_HOST": "Waiting for host to start..."
+    "BACK_TO_LOBBY": "Back to Lobby"
+  },
+  "GAME": {
+    "ROUND_LABEL": "Round",
+    "CALL_BASTA": "BASTA!",
+    "TIMER_LABEL": "Time Left",
+    "SUBMITTING": "Submitting answers..."
+  },
+  "VALIDATION": {
+    "TITLE": "Validate Your Answers",
+    "PLAYER": "Player",
+    "YOU": "You",
+    "VALID": "Valid",
+    "INVALID": "Invalid",
+    "CONFIRM": "Confirm Validation",
+    "SUBMITTING": "Submitting...",
+    "WAITING_FOR_OTHERS": "Waiting for other players to validate..."
+  },
+  "RESULTS": {
+    "TITLE": "Round Results",
+    "SCORE": "Score",
+    "TOTAL": "Total",
+    "START_NEXT_ROUND": "Start Next Round",
+    "WAITING_FOR_HOST": "Waiting for host to start next round..."
+  },
+  "GAME_OVER": {
+    "TITLE": "GAME OVER",
+    "WINNER": "WINNER",
+    "FINAL_STANDINGS": "Final Standings",
+    "PLAY_AGAIN": "PLAY AGAIN",
+    "EXIT_HOME": "EXIT TO HOME"
+  },
+  "ERRORS": {
+    "CONNECTION_CONNECTING": "Connecting to server...",
+    "CONNECTION_RECONNECTING": "Connection lost. Reconnecting...",
+    "CONNECTION_DISCONNECTED": "Disconnected. Please refresh."
   }
 }

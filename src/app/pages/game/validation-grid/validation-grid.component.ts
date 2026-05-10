@@ -2,20 +2,21 @@ import { Component, Input, Output, EventEmitter, signal, OnInit } from '@angular
 import { CommonModule } from '@angular/common';
 import { ScoringData } from '../../../models/game.models';
 import { CategoryDto } from '../../../models/lobby.models';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-validation-grid',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="validation-container glass-panel animate-fade-in">
-      <h2 class="text-2xl font-bold mb-6 text-center text-primary-light">Validate Your Answers</h2>
+      <h2 class="text-2xl font-bold mb-6 text-center text-primary-light">{{ 'VALIDATION.TITLE' | translate }}</h2>
       
       <div class="table-responsive">
         <table class="validation-table">
           <thead>
             <tr>
-              <th>Player</th>
+              <th>{{ 'VALIDATION.PLAYER' | translate }}</th>
               <th *ngFor="let cat of categories">
                 {{ cat.name }}
               </th>
@@ -26,7 +27,7 @@ import { CategoryDto } from '../../../models/lobby.models';
             <tr *ngFor="let player of scoringData.players" [class.is-self]="player.userId === currentUserId">
               <td class="player-cell">
                 <span class="nickname">{{ player.nickname }}</span>
-                <span *ngIf="player.userId === currentUserId" class="self-badge">You</span>
+                <span *ngIf="player.userId === currentUserId" class="self-badge">{{ 'VALIDATION.YOU' | translate }}</span>
               </td>
               <td *ngFor="let cat of categories">
                 <div class="answer-cell">
@@ -39,7 +40,7 @@ import { CategoryDto } from '../../../models/lobby.models';
                       [class.valid]="validations[cat.categoryId]"
                       [class.invalid]="!validations[cat.categoryId]"
                       (click)="toggleValidation(cat.categoryId)">
-                      {{ validations[cat.categoryId] ? 'Valid' : 'Invalid' }}
+                      {{ (validations[cat.categoryId] ? 'VALIDATION.VALID' : 'VALIDATION.INVALID') | translate }}
                     </button>
                   </div>
                 </div>
@@ -54,7 +55,7 @@ import { CategoryDto } from '../../../models/lobby.models';
           class="btn-primary btn-large" 
           [disabled]="isSubmitting"
           (click)="submit()">
-          {{ isSubmitting ? 'Submitting...' : 'Confirm Validation' }}
+          {{ (isSubmitting ? 'VALIDATION.SUBMITTING' : 'VALIDATION.CONFIRM') | translate }}
         </button>
       </div>
     </div>
