@@ -5,6 +5,7 @@ import { PlayerStateService } from '../../services/player-state.service';
 import { GameService } from '../../services/game.service';
 import { Router } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 describe('LobbyComponent', () => {
   let component: LobbyComponent;
@@ -44,7 +45,7 @@ describe('LobbyComponent', () => {
     mockSignalr.invoke.and.returnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
-      imports: [LobbyComponent],
+      imports: [LobbyComponent, TranslateModule.forRoot()],
       providers: [
         { provide: SignalrService, useValue: mockSignalr },
         { provide: PlayerStateService, useValue: mockPlayerState },

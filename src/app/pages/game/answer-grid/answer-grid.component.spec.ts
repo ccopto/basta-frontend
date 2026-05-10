@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AnswerGridComponent } from './answer-grid.component';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { By } from '@angular/platform-browser';
+import { TranslateModule } from '@ngx-translate/core';
 
 describe('AnswerGridComponent', () => {
   let component: AnswerGridComponent;
@@ -9,7 +10,7 @@ describe('AnswerGridComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AnswerGridComponent, ReactiveFormsModule]
+      imports: [AnswerGridComponent, ReactiveFormsModule, TranslateModule.forRoot()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AnswerGridComponent);

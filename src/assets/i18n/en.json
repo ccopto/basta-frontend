@@ -49,6 +49,7 @@
   "GAME": {
     "ROUND_LABEL": "Round",
     "CALL_BASTA": "BASTA!",
+    "STARTS_WITH": "Starts with {{ letter }}",
     "TIMER_LABEL": "Time Left",
     "SUBMITTING": "Submitting answers..."
   },

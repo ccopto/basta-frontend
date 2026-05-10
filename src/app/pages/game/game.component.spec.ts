@@ -12,6 +12,7 @@ import { CountdownTimerComponent } from './countdown-timer/countdown-timer.compo
 import { AnswerGridComponent } from './answer-grid/answer-grid.component';
 import { ValidationGridComponent } from './validation-grid/validation-grid.component';
 import { RoundResultsComponent } from './round-results/round-results.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 
@@ -68,7 +69,8 @@ describe('GameComponent', () => {
         CountdownTimerComponent, 
         AnswerGridComponent,
         ValidationGridComponent,
-        RoundResultsComponent
+        RoundResultsComponent,
+        TranslateModule.forRoot()
       ],
 
       providers: [

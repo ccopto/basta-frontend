@@ -3,6 +3,7 @@ import { GameOverComponent } from './game-over.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { GameResultsService } from '../../services/game-results.service';
 import { provideRouter } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 describe('GameOverComponent', () => {
   let component: GameOverComponent;
@@ -14,7 +15,7 @@ describe('GameOverComponent', () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [GameOverComponent],
+      imports: [GameOverComponent, TranslateModule.forRoot()],
       providers: [
         provideRouter([]),
         { provide: Router, useValue: mockRouter },

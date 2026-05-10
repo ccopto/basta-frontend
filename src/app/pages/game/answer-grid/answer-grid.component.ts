@@ -2,14 +2,14 @@ import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleCha
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
-
 import { AnswerMap } from '../../../models/game.models';
 import { CategoryDto } from '../../../models/lobby.models';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-answer-grid',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
   template: `
     <form [formGroup]="form" class="answer-grid">
       @for (cat of categories; track cat.categoryId) {
@@ -19,7 +19,7 @@ import { CategoryDto } from '../../../models/lobby.models';
             [id]="'cat-' + cat.categoryId"
             type="text" 
             [formControlName]="cat.categoryId.toString()"
-            [placeholder]="'Starts with ' + currentLetter.toUpperCase()"
+            [placeholder]="'GAME.STARTS_WITH' | translate:{ letter: currentLetter.toUpperCase() }"
             autocomplete="off"
           >
         </div>

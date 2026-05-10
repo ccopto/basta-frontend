@@ -4,7 +4,7 @@
     "SUBTITLE": "Online",
     "DESCRIPTION": "El clásico juego de palabras — ahora multijugador. Corre para llenar las categorías antes de que alguien diga",
     "BASTA": "¡Basta!",
-    "START_PLAYING": "Empezar a Jugar",
+    "START_PLAYING": "Comenzar a Jugar",
     "CHOOSE_NICKNAME": "Elige un Apodo",
     "GAME_LANGUAGE": "Idioma del Juego",
     "CREATE_GAME": "Crear Partida",
@@ -49,6 +49,7 @@
   "GAME": {
     "ROUND_LABEL": "Ronda",
     "CALL_BASTA": "¡BASTA!",
+    "STARTS_WITH": "Empieza con {{ letter }}",
     "TIMER_LABEL": "Tiempo Restante",
     "SUBMITTING": "Enviando respuestas..."
   },
