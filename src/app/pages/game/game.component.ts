@@ -183,6 +183,9 @@ export class GameComponent implements OnInit, OnDestroy {
     this.currentPhase.set('playing');
     this.scoringData.set(null);
     this.roundScores.set([]);
+
+    // Restore any previously saved answers for this specific round
+    this.loadAnswersFromLocal();
   }
 
 
@@ -210,6 +213,37 @@ export class GameComponent implements OnInit, OnDestroy {
 
   public onAnswersChanged(updatedAnswers: AnswerMap) {
     this.answers = updatedAnswers;
+    this.saveAnswersToLocal();
+  }
+
+  private saveAnswersToLocal() {
+    if (this.roundActive() && !this.isLocked()) {
+      const key = `basta_answers_${this.gameCode}_${this.roundNumber()}`;
+      localStorage.setItem(key, JSON.stringify(this.answers));
+    }
+  }
+
+  private loadAnswersFromLocal() {
+    const key = `basta_answers_${this.gameCode}_${this.roundNumber()}`;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Only merge keys that exist in our current categories
+        Object.keys(parsed).forEach(catId => {
+          if (this.answers.hasOwnProperty(catId)) {
+            this.answers[Number(catId)] = parsed[catId];
+          }
+        });
+      } catch (e) {
+        console.warn('Failed to parse saved answers', e);
+      }
+    }
+  }
+
+  private clearAnswersFromLocal() {
+    const key = `basta_answers_${this.gameCode}_${this.roundNumber()}`;
+    localStorage.removeItem(key);
   }
 
   public onTimerExpired() {
@@ -232,6 +266,7 @@ export class GameComponent implements OnInit, OnDestroy {
   private async submitAnswers() {
     try {
       await this.signalrService.invoke('SubmitAnswers', this.answers);
+      this.clearAnswersFromLocal();
     } catch (err) {
       console.error('Failed to submit answers', err);
     }
