@@ -48,7 +48,7 @@
 .value {
   font-size: 2rem;
   font-weight: 800;
-  color: var(--primary-color);
+  color: var(--color-primary);
 }
 
 .timer-section {
@@ -66,7 +66,7 @@
 
 .timer-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
   transition: width 0.1s linear;
 }
 
@@ -93,7 +93,7 @@
 
 .category-card label {
   font-weight: 600;
-  color: var(--text-color);
+  color: var(--color-text);
   font-size: 1rem;
 }
 
@@ -109,7 +109,7 @@
 
 .category-card input:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--color-primary);
   background: rgba(255, 255, 255, 0.1);
   box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
 }
@@ -136,7 +136,7 @@
 }
 
 .letter-box {
-  background: var(--card-bg);
+  background: var(--color-surface);
   padding: 4rem;
   border-radius: 2rem;
   display: flex;
@@ -159,7 +159,7 @@
   line-height: 1;
   margin: 0;
   font-weight: 900;
-  background: linear-gradient(135deg, white, var(--primary-color));
+  background: linear-gradient(135deg, white, var(--color-primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
