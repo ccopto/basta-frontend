@@ -5,6 +5,7 @@ import { PlayerStateService } from '../../services/player-state.service';
 import { GameService } from '../../services/game.service';
 import { Router } from '@angular/router';
 import { of, Subject } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 describe('GameSetupComponent', () => {
   let component: GameSetupComponent;
@@ -19,7 +20,7 @@ describe('GameSetupComponent', () => {
   beforeEach(async () => {
     mockSignalr = jasmine.createSpyObj('SignalrService', ['startConnection', 'invoke', 'on', 'off']);
     mockPlayerState = jasmine.createSpyObj('PlayerStateService', ['updateState'], {
-      currentState: { gameCode: 'ABCD', nickname: 'Host', userId: 1, isHost: true }
+      currentState: { gameCode: 'ABCD', nickname: 'Host', userId: 1, isHost: true, language: 'en' }
     });
     mockGameService = jasmine.createSpyObj('GameService', ['getGame', 'getCategories']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
@@ -44,7 +45,7 @@ describe('GameSetupComponent', () => {
     mockSignalr.invoke.and.returnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
-      imports: [GameSetupComponent],
+      imports: [GameSetupComponent, TranslateModule.forRoot()],
       providers: [
         { provide: SignalrService, useValue: mockSignalr },
         { provide: PlayerStateService, useValue: mockPlayerState },
@@ -64,7 +65,7 @@ describe('GameSetupComponent', () => {
 
   it('should load categories on init', () => {
     expect(mockGameService.getGame).toHaveBeenCalled();
-    expect(mockGameService.getCategories).toHaveBeenCalled();
+    expect(mockGameService.getCategories).toHaveBeenCalledWith('en');
     expect(component.availableCategories.length).toBe(2);
   });
 

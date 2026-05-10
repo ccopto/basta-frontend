@@ -17,12 +17,12 @@ import { PlayerStateService } from '../../services/player-state.service';
       <section class="hero">
         <div class="hero-content animate-fade-in-up">
           <h1 class="hero-title">
-            <span class="hero-accent">¡</span>Basta<span class="hero-accent">!</span>
+            <span class="hero-accent">{{ 'HOME.TITLE' | translate | slice:0:1 }}</span>{{ 'HOME.TITLE' | translate | slice:1:-1 }}<span class="hero-accent">{{ 'HOME.TITLE' | translate | slice:-1 }}</span>
           </h1>
-          <p class="hero-subtitle">Online</p>
+          <p class="hero-subtitle">{{ 'HOME.SUBTITLE' | translate }}</p>
           <p class="hero-description">
-            The classic word game — now multiplayer. Race to fill categories before someone calls
-            <strong>¡Basta!</strong>
+            {{ 'HOME.DESCRIPTION' | translate }}
+            <strong>{{ 'HOME.BASTA' | translate }}</strong>
           </p>
         </div>
       </section>
@@ -30,11 +30,11 @@ import { PlayerStateService } from '../../services/player-state.service';
       <!-- Action Area -->
       <section class="action-section animate-scale-in">
         <div class="glass-card form-card">
-          <h2 class="form-title">Start Playing</h2>
+          <h2 class="form-title">{{ 'HOME.START_PLAYING' | translate }}</h2>
           
           <form *ngIf="!showJoinForm" [formGroup]="gameForm" (ngSubmit)="onCreateGame()">
             <div class="form-group">
-              <label for="nickname">Choose a Nickname</label>
+              <label for="nickname">{{ 'HOME.CHOOSE_NICKNAME' | translate }}</label>
               <input 
                 type="text" 
                 id="nickname" 
@@ -44,13 +44,13 @@ import { PlayerStateService } from '../../services/player-state.service';
                 autocomplete="off"
               />
               <div *ngIf="gameForm.get('nickname')?.touched && gameForm.get('nickname')?.invalid" class="error-msg" data-cy="nickname-error">
-                Nickname is required (no just spaces).
+                {{ 'HOME.ERRORS.NICKNAME_REQUIRED' | translate }}
               </div>
             </div>
-
++
             <div class="form-group">
-              <label for="language">Game Language</label>
-              <select id="language" formControlName="language">
+              <label for="language">{{ 'HOME.GAME_LANGUAGE' | translate }}</label>
+              <select id="language" formControlName="language" (change)="onLanguageChange($event)">
                 <option value="en">English</option>
                 <option value="es">Español</option>
               </select>
@@ -61,13 +61,13 @@ import { PlayerStateService } from '../../services/player-state.service';
                 type="submit" 
                 class="btn btn-primary" 
                 [disabled]="gameForm.invalid || isLoading">
-                {{ isLoading ? 'Creating...' : 'Create Game' }}
+                {{ (isLoading ? 'HOME.CREATING' : 'HOME.CREATE_GAME') | translate }}
               </button>
               
-              <div class="divider"><span>OR</span></div>
+              <div class="divider"><span>{{ 'HOME.OR' | translate }}</span></div>
               
               <button type="button" class="btn btn-secondary" (click)="onJoinGame()">
-                Join Existing Game
+                {{ 'HOME.JOIN_EXISTING' | translate }}
               </button>
             </div>
 
@@ -78,7 +78,7 @@ import { PlayerStateService } from '../../services/player-state.service';
 
           <form *ngIf="showJoinForm" [formGroup]="joinForm" (ngSubmit)="onJoinSubmit()">
             <div class="form-group">
-              <label for="joinNickname">Your Nickname</label>
+              <label for="joinNickname">{{ 'HOME.YOUR_NICKNAME' | translate }}</label>
               <input 
                 type="text" 
                 id="joinNickname" 
@@ -88,12 +88,12 @@ import { PlayerStateService } from '../../services/player-state.service';
                 autocomplete="off"
               />
               <div *ngIf="joinForm.get('nickname')?.touched && joinForm.get('nickname')?.invalid" class="error-msg">
-                Nickname is required.
+                {{ 'HOME.ERRORS.NICKNAME_REQUIRED' | translate }}
               </div>
             </div>
 
             <div class="form-group">
-              <label for="gameCode">Game Code</label>
+              <label for="gameCode">{{ 'HOME.GAME_CODE' | translate }}</label>
               <input 
                 type="text" 
                 id="gameCode" 
@@ -104,13 +104,13 @@ import { PlayerStateService } from '../../services/player-state.service';
                 style="text-transform: uppercase;"
               />
               <div *ngIf="joinForm.get('gameCode')?.touched && joinForm.get('gameCode')?.invalid" class="error-msg">
-                Game codes are 4 characters (e.g. ABCD).
+                {{ 'HOME.ERRORS.GAME_CODE_REQUIRED' | translate }}
               </div>
             </div>
 
             <div class="form-group">
-              <label for="joinLanguage">Preferred Language</label>
-              <select id="joinLanguage" formControlName="language">
+              <label for="joinLanguage">{{ 'HOME.PREFERRED_LANGUAGE' | translate }}</label>
+              <select id="joinLanguage" formControlName="language" (change)="onLanguageChange($event)">
                 <option value="en">English</option>
                 <option value="es">Español</option>
               </select>
@@ -121,13 +121,13 @@ import { PlayerStateService } from '../../services/player-state.service';
                 type="submit" 
                 class="btn btn-primary" 
                 [disabled]="joinForm.invalid || isLoading">
-                {{ isLoading ? 'Joining...' : 'Join Game' }}
+                {{ (isLoading ? 'HOME.JOINING' : 'HOME.JOIN_GAME') | translate }}
               </button>
               
-              <div class="divider"><span>OR</span></div>
+              <div class="divider"><span>{{ 'HOME.OR' | translate }}</span></div>
               
               <button type="button" class="btn btn-secondary" (click)="onJoinGame()">
-                Back to Create Game
+                {{ 'HOME.BACK_TO_CREATE' | translate }}
               </button>
             </div>
 
@@ -361,14 +361,24 @@ export class HomeComponent {
 
     this.gameForm = this.fb.group({
       nickname: [existingNick, [Validators.required, Validators.pattern(/.*[^\s].*/)]],
-      language: ['en']
+      language: [this.playerState.currentState.language]
     });
 
     this.joinForm = this.fb.group({
       nickname: [existingNick, [Validators.required, Validators.pattern(/.*[^\s].*/)]],
       gameCode: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4}$/i)]],
-      language: ['en']
+      language: [this.playerState.currentState.language]
     });
+  }
+
+  onLanguageChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const lang = target.value;
+    this.playerState.updateState({ language: lang });
+    
+    // Sync both forms
+    this.gameForm.patchValue({ language: lang }, { emitEvent: false });
+    this.joinForm.patchValue({ language: lang }, { emitEvent: false });
   }
 
   onCreateGame() {

@@ -1,58 +1,35 @@
 {
-  "APP": {
-    "TITLE": "Basta! Online"
-  },
   "HOME": {
-    "TITLE": "Welcome to Basta!",
-    "NICKNAME_LABEL": "Your Nickname",
-    "NICKNAME_PLACEHOLDER": "Enter a nickname...",
-    "LANGUAGE_LABEL": "Language",
+    "TITLE": "Basta!",
+    "SUBTITLE": "Online",
+    "DESCRIPTION": "The classic word game — now multiplayer. Race to fill categories before someone calls",
+    "BASTA": "Basta!",
+    "START_PLAYING": "Start Playing",
+    "CHOOSE_NICKNAME": "Choose a Nickname",
+    "GAME_LANGUAGE": "Game Language",
     "CREATE_GAME": "Create Game",
-    "JOIN_GAME": "Join Game",
-    "GAME_CODE_LABEL": "Game Code",
-    "GAME_CODE_PLACEHOLDER": "Enter game code..."
-  },
-  "LOBBY": {
-    "TITLE": "Game Lobby",
-    "PLAYERS": "Players",
-    "WAITING": "Waiting for players...",
-    "START_GAME": "Start Game",
+    "CREATING": "Creating...",
+    "JOIN_EXISTING": "Join Existing Game",
+    "OR": "OR",
+    "YOUR_NICKNAME": "Your Nickname",
     "GAME_CODE": "Game Code",
-    "COPY_CODE": "Copy Code"
+    "PREFERRED_LANGUAGE": "Preferred Language",
+    "JOIN_GAME": "Join Game",
+    "JOINING": "Joining...",
+    "BACK_TO_CREATE": "Back to Create Game",
+    "ERRORS": {
+      "NICKNAME_REQUIRED": "Nickname is required (no just spaces).",
+      "GAME_CODE_REQUIRED": "Game codes are 4 characters (e.g. ABCD).",
+      "CREATE_FAILED": "Failed to create game. Please try again.",
+      "JOIN_FAILED": "Could not join. Check the game code and try again."
+    }
   },
   "SETUP": {
-    "TITLE": "Game Setup",
-    "ROUNDS_LABEL": "Number of Rounds",
-    "TIMER_LABEL": "Timer (seconds)",
-    "CATEGORIES_LABEL": "Categories",
-    "START": "Start Game"
-  },
-  "GAME": {
-    "ROUND": "Round",
-    "LETTER": "Letter",
-    "TIME_LEFT": "Time Left",
-    "BASTA": "¡Basta!",
-    "SUBMIT": "Submit Answers"
-  },
-  "SCORING": {
-    "TITLE": "Scoring & Validation",
-    "VALID": "Valid",
-    "INVALID": "Invalid",
-    "SUBMIT_VALIDATION": "Submit Validation",
-    "UNIQUE": "Unique (10 pts)",
-    "SHARED": "Shared (5 pts)"
-  },
-  "GAME_OVER": {
-    "TITLE": "Game Over",
-    "WINNER": "Winner",
-    "FINAL_SCORES": "Final Scores",
-    "PLAY_AGAIN": "Play Again",
-    "BACK_HOME": "Back to Home"
-  },
-  "ERRORS": {
-    "INVALID_CODE": "Invalid game code.",
-    "GAME_FULL": "This game is full.",
-    "NICKNAME_REQUIRED": "Please enter a nickname.",
-    "CONNECTION_LOST": "Connection lost. Reconnecting..."
+    "TITLE": "Game Settings",
+    "ROUNDS": "Total Rounds",
+    "TIMER": "Timer Duration (seconds)",
+    "CATEGORIES": "Select Categories",
+    "START_GAME": "Start Game",
+    "WAITING_FOR_HOST": "Waiting for host to start..."
   }
 }

@@ -11,6 +11,7 @@ export interface PlayerState {
   totalRounds: number;
   timerDuration: number;
   hostUserId: number | null;
+  language: string;
 }
 
 
@@ -29,7 +30,8 @@ export class PlayerStateService {
       selectedCategoryIds: [],
       totalRounds: GAME_DEFAULTS.totalRounds,
       timerDuration: GAME_DEFAULTS.timerDuration,
-      hostUserId: null
+      hostUserId: null,
+      language: 'en'
     };
 
   }
