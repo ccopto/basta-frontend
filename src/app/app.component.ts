@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { PlayerStateService } from './services/player-state.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
@@ -19,11 +20,13 @@ export class AppComponent {
     this.translate.use(this.playerState.currentState.language);
 
     // React to language changes in the global state
-    this.playerState.state$.subscribe(state => {
-      if (state.language && this.translate.currentLang !== state.language) {
-        this.translate.use(state.language);
-      }
-    });
+    this.playerState.state$
+      .pipe(takeUntilDestroyed())
+      .subscribe(state => {
+        if (state.language && this.translate.currentLang !== state.language) {
+          this.translate.use(state.language);
+        }
+      });
 
     // Attach mock globally so Cypress can hook into it
     (window as any).basta_mock_signalr = {
