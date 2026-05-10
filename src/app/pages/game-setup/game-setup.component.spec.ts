@@ -65,7 +65,7 @@ describe('GameSetupComponent', () => {
 
   it('should load categories on init', () => {
     expect(mockGameService.getGame).toHaveBeenCalled();
-    expect(mockGameService.getCategories).toHaveBeenCalled();
+    expect(mockGameService.getCategories).toHaveBeenCalledWith('en');
     expect(component.availableCategories.length).toBe(2);
   });
 
