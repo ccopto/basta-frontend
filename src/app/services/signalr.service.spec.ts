@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { NgZone } from '@angular/core';
-import { SignalrService } from './signalr.service';
+import { SignalrService, ConnectionState } from './signalr.service';
 import * as signalR from '@microsoft/signalr';
 
 describe('SignalrService', () => {
@@ -167,5 +167,45 @@ describe('SignalrService', () => {
     
     // Verify our proactive subscriber received the data
     expect(receivedData).toBe('sync success');
+  });
+
+  it('should update state to reconnecting', async () => {
+    await service.startConnection();
+    
+    // Capture the callback
+    const reconnectingSpy = mockHubConnection.onreconnecting as jasmine.Spy;
+    const callback = reconnectingSpy.calls.argsFor(0)[0];
+    
+    let currentState: ConnectionState = 'connected';
+    service.connectionState$.subscribe(s => currentState = s);
+    
+    TestBed.inject(NgZone).run(() => callback());
+    expect(currentState).toBe('reconnecting');
+  });
+
+  it('should update state to connected after reconnection', async () => {
+    await service.startConnection();
+    
+    const reconnectedSpy = mockHubConnection.onreconnected as jasmine.Spy;
+    const callback = reconnectedSpy.calls.argsFor(0)[0];
+    
+    let currentState: ConnectionState = 'disconnected';
+    service.connectionState$.subscribe(s => currentState = s);
+    
+    TestBed.inject(NgZone).run(() => callback());
+    expect(currentState).toBe('connected');
+  });
+
+  it('should update state to disconnected on close', async () => {
+    await service.startConnection();
+    
+    const closeSpy = mockHubConnection.onclose as jasmine.Spy;
+    const callback = closeSpy.calls.argsFor(0)[0];
+    
+    let currentState: ConnectionState = 'connected';
+    service.connectionState$.subscribe(s => currentState = s);
+    
+    TestBed.inject(NgZone).run(() => callback());
+    expect(currentState).toBe('disconnected');
   });
 });

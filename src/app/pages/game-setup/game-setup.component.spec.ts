@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick, flush, waitForAsync } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { GameSetupComponent } from './game-setup.component';
 import { SignalrService } from '../../services/signalr.service';
 import { PlayerStateService } from '../../services/player-state.service';
@@ -138,4 +139,34 @@ describe('GameSetupComponent', () => {
     expect(mockSignalr.invoke).toHaveBeenCalledWith('StartGame');
   }));
 
+  it('should not update rounds outside min/max range', () => {
+    // Min is 1
+    component.totalRounds.set(1);
+    component.updateRounds(-1);
+    expect(component.totalRounds()).toBe(1);
+    
+    // Max is 20
+    component.totalRounds.set(20);
+    component.updateRounds(1);
+    expect(component.totalRounds()).toBe(20);
+  });
+
+  it('should not update timer outside min/max range', () => {
+    // Min is 30
+    component.timerDuration.set(30);
+    component.updateTimer(-15);
+    expect(component.timerDuration()).toBe(30);
+    
+    // Max is 120
+    component.timerDuration.set(120);
+    component.updateTimer(15);
+    expect(component.timerDuration()).toBe(120);
+  });
+
+  it('should disable Start Game button if no categories selected', () => {
+    component.selectedCategoryIds.clear();
+    fixture.detectChanges();
+    const btn = fixture.debugElement.query(By.css('.btn-primary')).nativeElement;
+    expect(btn.disabled).toBeTrue();
+  });
 });
