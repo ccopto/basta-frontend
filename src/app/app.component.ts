@@ -4,11 +4,16 @@ import { TranslateService } from '@ngx-translate/core';
 import { PlayerStateService } from './services/player-state.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+import { ConnectionStatusComponent } from './components/connection-status/connection-status';
+
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: `<router-outlet />`,
+  imports: [RouterOutlet, ConnectionStatusComponent],
+  template: `
+    <app-connection-status />
+    <router-outlet />
+  `,
   styles: [`:host { display: block; min-height: 100vh; }`]
 })
 export class AppComponent {

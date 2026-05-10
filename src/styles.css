@@ -300,21 +300,62 @@ input::placeholder {
 .animate-pulse { animation: pulse 2s infinite; }
 
 /* --- Responsive Breakpoints --- */
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  :root {
+    --font-size-hero: 3rem;
+    --font-size-4xl: 2rem;
+  }
+}
+
+/* Mobile landscape and below */
 @media (max-width: 768px) {
   :root {
     --font-size-hero: 2.25rem;
     --font-size-4xl: 1.75rem;
     --font-size-3xl: 1.5rem;
+    --space-2xl: 2rem;
   }
 
   .page-container {
     padding: var(--space-lg) var(--space-md);
   }
+
+  .glass-card {
+    padding: var(--space-lg);
+  }
 }
 
+/* Small mobile and below */
 @media (max-width: 480px) {
   :root {
     --font-size-hero: 1.75rem;
     --font-size-4xl: 1.5rem;
+    --font-size-3xl: 1.25rem;
   }
+
+  .btn {
+    width: 100%;
+    padding: var(--space-md);
+  }
+}
+
+/* Responsive Grid Helpers */
+.grid-stack {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+
+@media (max-width: 600px) {
+  .grid-stack {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Touch target helpers */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
 }
