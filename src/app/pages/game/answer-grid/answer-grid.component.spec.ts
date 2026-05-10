@@ -89,4 +89,21 @@ describe('AnswerGridComponent', () => {
     const input = fixture.debugElement.query(By.css('input')).nativeElement;
     expect(input.disabled).toBeTrue();
   });
+
+  it('should render localized placeholder', () => {
+    component.categories = [{ categoryId: 1, name: 'Name' }];
+    component.currentLetter = 'A';
+    component.ngOnChanges({
+      categories: { 
+        currentValue: component.categories, 
+        previousValue: [], 
+        firstChange: true, 
+        isFirstChange: () => true 
+      }
+    });
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input')).nativeElement;
+    expect(input.placeholder).toBeTruthy();
+  });
 });
