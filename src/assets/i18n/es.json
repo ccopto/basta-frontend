@@ -1,8 +1,8 @@
 {
   "HOME": {
     "TITLE": "¡Basta!",
-    "SUBTITLE": "En Línea",
-    "DESCRIPTION": "El clásico juego de palabras, ahora multijugador. Corre para completar las categorías antes de que alguien diga",
+    "SUBTITLE": "Online",
+    "DESCRIPTION": "El clásico juego de palabras — ahora multijugador. Corre para llenar las categorías antes de que alguien diga",
     "BASTA": "¡Basta!",
     "START_PLAYING": "Comenzar a Jugar",
     "CHOOSE_NICKNAME": "Elige un Apodo",
@@ -24,17 +24,62 @@
       "JOIN_FAILED": "No se pudo unir. Revisa el código e intenta de nuevo."
     }
   },
-  "ERRORS": {
-    "CONNECTION_CONNECTING": "Conectando al servidor...",
-    "CONNECTION_RECONNECTING": "Conexión perdida. Reconectando...",
-    "CONNECTION_DISCONNECTED": "Desconectado. Por favor recarga."
+  "LOBBY": {
+    "TITLE": "Sala de Espera",
+    "WAITING_FOR_PLAYERS": "Esperando a que se unan más jugadores...",
+    "READY_TO_START": "¡Listos para empezar!",
+    "ROUNDS_COUNT": "{{ count }} Rondas",
+    "NEED_PLAYERS": "Se necesitan al menos 2 jugadores",
+    "CONFIGURE_GAME": "Configurar Partida",
+    "START_GAME": "Empezar Partida",
+    "LEAVE_GAME": "Salir",
+    "WAITING_FOR_HOST": "Esperando a que el host empiece...",
+    "SHARE_CODE": "Comparte este código con tus amigos:"
   },
   "SETUP": {
     "TITLE": "Configuración",
     "ROUNDS": "Rondas Totales",
-    "TIMER": "Duración del Temporizador (segundos)",
+    "TIMER": "Duración del Cronómetro",
+    "TIMER_SECONDS": "segundos",
     "CATEGORIES": "Seleccionar Categorías",
-    "START_GAME": "Empezar Juego",
-    "WAITING_FOR_HOST": "Esperando a que el anfitrión comience..."
+    "SELECTED_CATEGORIES": "{{ count }} categorías seleccionadas",
+    "START_GAME": "Empezar Partida",
+    "BACK_TO_LOBBY": "Volver a la Sala"
+  },
+  "GAME": {
+    "ROUND_LABEL": "Ronda",
+    "CALL_BASTA": "¡BASTA!",
+    "STARTS_WITH": "Empieza con {{ letter }}",
+    "TIMER_LABEL": "Tiempo Restante",
+    "SUBMITTING": "Enviando respuestas..."
+  },
+  "VALIDATION": {
+    "TITLE": "Valida tus Respuestas",
+    "PLAYER": "Jugador",
+    "YOU": "Tú",
+    "VALID": "Válido",
+    "INVALID": "Inválido",
+    "CONFIRM": "Confirmar Validación",
+    "SUBMITTING": "Enviando...",
+    "WAITING_FOR_OTHERS": "Esperando a que otros validen..."
+  },
+  "RESULTS": {
+    "TITLE": "Resultados de la Ronda",
+    "SCORE": "Puntos",
+    "TOTAL": "Total",
+    "START_NEXT_ROUND": "Siguiente Ronda",
+    "WAITING_FOR_HOST": "Esperando a que el host inicie la ronda..."
+  },
+  "GAME_OVER": {
+    "TITLE": "FIN DEL JUEGO",
+    "WINNER": "GANADOR",
+    "FINAL_STANDINGS": "Posiciones Finales",
+    "PLAY_AGAIN": "JUGAR DE NUEVO",
+    "EXIT_HOME": "SALIR AL INICIO"
+  },
+  "ERRORS": {
+    "CONNECTION_CONNECTING": "Conectando al servidor...",
+    "CONNECTION_RECONNECTING": "Conexión perdida. Reconectando...",
+    "CONNECTION_DISCONNECTED": "Desconectado. Por favor recarga."
   }
 }

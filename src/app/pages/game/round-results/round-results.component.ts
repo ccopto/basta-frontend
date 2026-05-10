@@ -2,15 +2,16 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlayerScore } from '../../../models/game.models';
 import { CategoryDto } from '../../../models/lobby.models';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-round-results',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="results-container glass-panel animate-scale-up">
-      <h2 class="text-3xl font-bold mb-2 text-center text-primary-light">Round Results</h2>
-      <p class="text-center text-white/60 mb-8">Points have been awarded!</p>
+      <h2 class="text-3xl font-bold mb-2 text-center text-primary-light">{{ 'RESULTS.TITLE' | translate }}</h2>
+      <p class="text-center text-white/60 mb-8">{{ 'RESULTS.TITLE' | translate }}</p>
       
       <div class="results-grid">
         <div *ngFor="let player of scores" class="player-result-card" [class.is-self]="player.userId === currentUserId">
@@ -18,7 +19,7 @@ import { CategoryDto } from '../../../models/lobby.models';
             <span class="nickname">{{ player.nickname }}</span>
             <div class="score-summary">
               <span class="round-pts">+{{ player.roundScore }} pts</span>
-              <span class="total-pts">Total: {{ player.cumulativeScore }}</span>
+              <span class="total-pts">{{ 'RESULTS.TOTAL' | translate }}: {{ player.cumulativeScore }}</span>
             </div>
           </div>
           
@@ -27,7 +28,7 @@ import { CategoryDto } from '../../../models/lobby.models';
               <span class="category-name">{{ getCategoryName(ans.categoryId) }}</span>
               <div class="answer-details">
                 <span class="answer-text" [class.invalid]="!ans.isValid">
-                  {{ ans.answer || '(Blank)' }}
+                  {{ ans.answer || ('(Blank)') }}
                 </span>
                 <span class="pts-badge" [class.unique]="ans.isUnique" [class.shared]="ans.isValid && !ans.isUnique">
                   {{ ans.points }}
@@ -40,11 +41,11 @@ import { CategoryDto } from '../../../models/lobby.models';
 
       <div *ngIf="isHost" class="actions mt-10 flex justify-center">
         <button class="btn-primary btn-xl" (click)="onNextRound.emit()">
-          Start Next Round
+          {{ 'RESULTS.START_NEXT_ROUND' | translate }}
         </button>
       </div>
       <p *ngIf="!isHost" class="text-center text-white/50 mt-10 italic">
-        Waiting for host to start the next round...
+        {{ 'RESULTS.WAITING_FOR_HOST' | translate }}
       </p>
     </div>
   `,

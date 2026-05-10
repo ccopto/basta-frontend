@@ -10,7 +10,7 @@
   <header class="game-header card glass">
     <div class="header-main">
       <div class="round-info">
-        <span class="label">Round</span>
+        <span class="label">{{ 'GAME.ROUND_LABEL' | translate }}</span>
         <span class="value">{{ roundNumber() }}</span>
       </div>
       
@@ -66,11 +66,10 @@
         [disabled]="!isRoundRunning"
         (click)="callBasta()"
       >
-        BASTA!
+        {{ 'GAME.CALL_BASTA' | translate }}
       </button>
     </footer>
   }
 
 
-</div>
 

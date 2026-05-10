@@ -4,17 +4,18 @@ import { Router, RouterLink } from '@angular/router';
 import { LeaderboardDto } from '../../models/game.models';
 import { LeaderboardComponent } from './components/leaderboard/leaderboard.component';
 import { GameResultsService } from '../../services/game-results.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-game-over',
   standalone: true,
-  imports: [CommonModule, RouterLink, LeaderboardComponent],
+  imports: [CommonModule, RouterLink, LeaderboardComponent, TranslateModule],
   template: `
     <div class="page-container animate-fade-in">
       <header class="header text-center mb-10">
-        <h1 class="text-5xl font-black text-white mb-2">GAME OVER</h1>
+        <h1 class="text-5xl font-black text-white mb-2">{{ 'GAME_OVER.TITLE' | translate }}</h1>
         <p class="text-xl text-primary-light font-semibold uppercase tracking-widest">
-          {{ leaderboard()?.reason || 'Session Finished' }}
+          {{ leaderboard()?.reason || ('GAME_OVER.FINAL_STANDINGS' | translate) }}
         </p>
       </header>
 
@@ -24,10 +25,10 @@ import { GameResultsService } from '../../services/game-results.service';
 
       <footer class="actions flex flex-col sm:flex-row gap-4 justify-center items-center">
         <button class="btn btn-primary btn-xl basta-btn" routerLink="/home">
-          PLAY AGAIN
+          {{ 'GAME_OVER.PLAY_AGAIN' | translate }}
         </button>
         <button class="btn btn-outline btn-lg" routerLink="/home">
-          EXIT TO HOME
+          {{ 'GAME_OVER.EXIT_HOME' | translate }}
         </button>
       </footer>
     </div>

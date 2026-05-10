@@ -15,6 +15,7 @@ import { CountdownTimerComponent } from './countdown-timer/countdown-timer.compo
 import { AnswerGridComponent } from './answer-grid/answer-grid.component';
 import { ValidationGridComponent } from './validation-grid/validation-grid.component';
 import { RoundResultsComponent } from './round-results/round-results.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { ScoringData, PlayerScore, LeaderboardDto } from '../../models/game.models';
 
@@ -29,7 +30,8 @@ import { ScoringData, PlayerScore, LeaderboardDto } from '../../models/game.mode
     CountdownTimerComponent, 
     AnswerGridComponent,
     ValidationGridComponent,
-    RoundResultsComponent
+    RoundResultsComponent,
+    TranslateModule
   ],
   templateUrl: './game.component.html',
 
