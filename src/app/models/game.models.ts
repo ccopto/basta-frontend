@@ -9,14 +9,25 @@ export interface RoundStoppedEvent {
   callerNickname: string;
 }
 
-export interface AnswerMap {
-  [categoryId: number]: string;
+/** Client-side map of categoryId → submitted answer string (used during the answering phase). */
+export type AnswerMap = { [categoryId: number]: string };
+
+/** Per-answer validation metadata from the server's Phase 1 dictionary check. */
+export interface AnswerValidation {
+  answerId: number;
+  categoryId: number;
+  answer: string;
+  /** null = not yet checked, true = auto-accepted, false = failed dict check */
+  dictionaryValid: boolean | null;
+  /** true = this answer should appear in the peer validation grid */
+  requiresPeerReview: boolean;
 }
 
 export interface PlayerAnswers {
   userId: number;
   nickname: string;
-  answers: AnswerMap;
+  /** Updated: now carries full validation metadata per answer. */
+  answers: AnswerValidation[];
 }
 
 export interface ScoringData {
@@ -30,6 +41,8 @@ export interface AnswerScore {
   isValid: boolean;
   points: number;
   isUnique: boolean;
+  /** null if not yet checked; true = auto-accepted by dictionary. */
+  dictionaryValid: boolean | null;
 }
 
 export interface PlayerScore {
@@ -51,4 +64,3 @@ export interface LeaderboardDto {
   reason: string;
   players: LeaderboardPlayer[];
 }
-

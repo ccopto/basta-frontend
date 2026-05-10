@@ -1,6 +1,8 @@
 export interface CreateGameRequest {
   hostNickname: string;
   preferredLanguage: string;
+  /** Language code for dictionary validation (e.g. 'en', 'es'). Defaults to 'en'. */
+  language: string;
   totalRounds: number;
   timerDuration: number;
   categoryIds: number[];
