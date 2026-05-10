@@ -30,6 +30,14 @@ import { TranslateModule } from '@ngx-translate/core';
                 <span class="answer-text" [class.invalid]="!ans.isValid">
                   {{ ans.answer || ('(Blank)') }}
                 </span>
+                <!-- Dictionary-validated badge -->
+                <span *ngIf="ans.dictionaryValid === true" class="val-badge dict-badge" data-testid="badge-dictionary-valid">
+                  ✅
+                </span>
+                <!-- Peer-approved badge (dict failed but peer accepted) -->
+                <span *ngIf="ans.dictionaryValid === false && ans.isValid === true" class="val-badge peer-badge" data-testid="badge-peer-approved">
+                  🗳️
+                </span>
                 <span class="pts-badge" [class.unique]="ans.isUnique" [class.shared]="ans.isValid && !ans.isUnique">
                   {{ ans.points }}
                 </span>
@@ -142,6 +150,13 @@ import { TranslateModule } from '@ngx-translate/core';
       text-decoration: line-through;
       opacity: 0.6;
     }
+
+    .val-badge {
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .dict-badge { filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.6)); }
+    .peer-badge { filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.6)); }
 
     .pts-badge {
       min-width: 28px;
