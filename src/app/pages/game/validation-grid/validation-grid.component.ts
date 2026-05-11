@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, computed, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ScoringData, AnswerValidation } from '../../../models/game.models';
 import { CategoryDto } from '../../../models/lobby.models';
@@ -34,7 +34,7 @@ import { TranslateModule } from '@ngx-translate/core';
               </td>
               <td *ngFor="let cat of peerReviewCategories">
                 <div class="answer-cell">
-                  <ng-container *ngIf="getAnswer(player.answers, cat.categoryId) as av; else noAnswer">
+                  <ng-container *ngIf="peerReviewMap[player.userId]?.[cat.categoryId] as av; else noAnswer">
                     <span class="answer-text">{{ av.answer }}</span>
                     <!-- Peer review prompt badge -->
                     <span class="peer-prompt" data-testid="peer-review-prompt">
@@ -207,7 +207,7 @@ import { TranslateModule } from '@ngx-translate/core';
     }
   `]
 })
-export class ValidationGridComponent implements OnInit {
+export class ValidationGridComponent implements OnInit, OnChanges {
   @Input() scoringData!: ScoringData;
   @Input() categories: CategoryDto[] = [];
   @Input() currentUserId: number = 0;
@@ -216,6 +216,8 @@ export class ValidationGridComponent implements OnInit {
   @Output() onValidated = new EventEmitter<{ [categoryId: number]: boolean }>();
 
   public validations: { [categoryId: number]: boolean } = {};
+  /** Pre-computed map for O(1) template lookups: userId -> categoryId -> AnswerValidation */
+  public peerReviewMap: Record<number, Record<number, AnswerValidation>> = {};
 
   /** Categories that have at least one answer requiring peer review. */
   get peerReviewCategories(): CategoryDto[] {
@@ -240,10 +242,23 @@ export class ValidationGridComponent implements OnInit {
     this.peerReviewCategories.forEach(cat => {
       this.validations[cat.categoryId] = true;
     });
+    this.updatePeerReviewMap();
   }
-
-  getAnswer(answers: AnswerValidation[], categoryId: number): AnswerValidation | undefined {
-    return answers.find(a => a.categoryId === categoryId && a.requiresPeerReview);
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['scoringData'] && this.scoringData) {
+      this.updatePeerReviewMap();
+    }
+  }
+  private updatePeerReviewMap() {
+    this.peerReviewMap = {};
+    for (const player of this.scoringData.players) {
+      this.peerReviewMap[player.userId] = {};
+      for (const av of player.answers) {
+        if (av.requiresPeerReview) {
+          this.peerReviewMap[player.userId][av.categoryId] = av;
+        }
+      }
+    }
   }
 
   toggleValidation(categoryId: number) {
