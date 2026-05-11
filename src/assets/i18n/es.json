@@ -44,7 +44,10 @@
     "CATEGORIES": "Seleccionar Categorías",
     "SELECTED_CATEGORIES": "{{ count }} categorías seleccionadas",
     "START_GAME": "Empezar Partida",
-    "BACK_TO_LOBBY": "Volver a la Sala"
+    "BACK_TO_LOBBY": "Volver a la Sala",
+    "LANGUAGE": "Idioma del diccionario",
+    "LANGUAGE_EN": "Inglés",
+    "LANGUAGE_ES": "Español"
   },
   "GAME": {
     "ROUND_LABEL": "Ronda",
@@ -61,7 +64,9 @@
     "INVALID": "Inválido",
     "CONFIRM": "Confirmar Validación",
     "SUBMITTING": "Enviando...",
-    "WAITING_FOR_OTHERS": "Esperando a que otros validen..."
+    "WAITING_FOR_OTHERS": "Esperando a que otros validen...",
+    "ALL_DICTIONARY_VALIDATED": "¡Todas las respuestas fueron validadas por el diccionario — no se requiere revisión!",
+    "PEER_REVIEW_NEEDED": "Requiere revisión"
   },
   "RESULTS": {
     "TITLE": "Resultados de la Ronda",

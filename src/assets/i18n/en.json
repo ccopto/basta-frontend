@@ -44,7 +44,10 @@
     "CATEGORIES": "Select Categories",
     "SELECTED_CATEGORIES": "{{ count }} categories selected",
     "START_GAME": "Start Game",
-    "BACK_TO_LOBBY": "Back to Lobby"
+    "BACK_TO_LOBBY": "Back to Lobby",
+    "LANGUAGE": "Dictionary Language",
+    "LANGUAGE_EN": "English",
+    "LANGUAGE_ES": "Spanish"
   },
   "GAME": {
     "ROUND_LABEL": "Round",
@@ -61,7 +64,9 @@
     "INVALID": "Invalid",
     "CONFIRM": "Confirm Validation",
     "SUBMITTING": "Submitting...",
-    "WAITING_FOR_OTHERS": "Waiting for other players to validate..."
+    "WAITING_FOR_OTHERS": "Waiting for other players to validate...",
+    "ALL_DICTIONARY_VALIDATED": "All answers were validated by the dictionary — no peer review needed!",
+    "PEER_REVIEW_NEEDED": "Needs peer review"
   },
   "RESULTS": {
     "TITLE": "Round Results",

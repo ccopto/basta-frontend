@@ -60,6 +60,25 @@ import { TranslateModule } from '@ngx-translate/core';
               </div>
             </div>
 
+            <!-- Language Selector -->
+            <div class="setting-item animate-fade-in lang-setting" style="animation-delay: 300ms">
+              <label>{{ 'SETUP.LANGUAGE' | translate }}</label>
+              <div class="lang-pills">
+                <button type="button"
+                  class="lang-pill"
+                  [class.active]="gameLanguage() === 'en'"
+                  (click)="setLanguage('en')">
+                  🇺🇸 {{ 'SETUP.LANGUAGE_EN' | translate }}
+                </button>
+                <button type="button"
+                  class="lang-pill"
+                  [class.active]="gameLanguage() === 'es'"
+                  (click)="setLanguage('es')">
+                  🇪🇸 {{ 'SETUP.LANGUAGE_ES' | translate }}
+                </button>
+              </div>
+            </div>
+
           </div>
 
           <!-- Categories -->
@@ -150,6 +169,36 @@ import { TranslateModule } from '@ngx-translate/core';
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: var(--space-md);
+    }
+
+    .lang-setting {
+      grid-column: 1 / -1; /* full width */
+    }
+
+    .lang-pills {
+      display: flex;
+      gap: var(--space-sm);
+      justify-content: center;
+      margin-top: var(--space-xs);
+    }
+
+    .lang-pill {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .lang-pill:hover { border-color: rgba(255,255,255,0.35); color: #fff; }
+    .lang-pill.active {
+      background: rgba(var(--color-primary-rgb), 0.2);
+      border-color: var(--color-primary);
+      color: var(--color-primary-light);
     }
 
     .setting-item {
@@ -340,6 +389,7 @@ export class GameSetupComponent implements OnInit, OnDestroy {
   // FE-1: Use Signals for interactive state to benefit from fine-grained change detection
   totalRounds = signal<number>(GAME_DEFAULTS.totalRounds);
   timerDuration = signal<number>(GAME_DEFAULTS.timerDuration);
+  gameLanguage = signal<string>('en');
   
   loading = true;
   isStarting = false;
@@ -450,6 +500,10 @@ export class GameSetupComponent implements OnInit, OnDestroy {
   }
 
 
+  setLanguage(lang: string) {
+    this.gameLanguage.set(lang);
+  }
+
   onBack() {
     this.router.navigate(['/lobby', this.gameCode]);
   }
@@ -465,11 +519,12 @@ export class GameSetupComponent implements OnInit, OnDestroy {
       const catArray = Array.from(this.selectedCategoryIds);
       await this.signalrService.invoke('UpdateGameSettings', this.totalRounds(), this.timerDuration(), catArray);
       
-      // 1.1 Save locally to state for fast navigation
+      // 1.1 Save locally to state (including game language for dictionary validation)
       this.playerState.updateState({ 
         selectedCategoryIds: catArray,
         totalRounds: this.totalRounds(),
-        timerDuration: this.timerDuration()
+        timerDuration: this.timerDuration(),
+        language: this.gameLanguage()
       });
       
       // 2. Start game

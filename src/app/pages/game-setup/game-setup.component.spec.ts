@@ -85,10 +85,11 @@ describe('GameSetupComponent', () => {
 
     expect(mockSignalr.invoke).toHaveBeenCalledWith('UpdateGameSettings', 5, 60, [2]);
     expect(mockSignalr.invoke).toHaveBeenCalledWith('StartGame');
-    expect(mockPlayerState.updateState).toHaveBeenCalledWith({ 
+    expect(mockPlayerState.updateState).toHaveBeenCalledWith({
       selectedCategoryIds: [2],
       totalRounds: 5,
-      timerDuration: 60
+      timerDuration: 60,
+      language: 'en'
     });
   }));
 

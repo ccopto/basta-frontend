@@ -393,6 +393,7 @@ export class HomeComponent {
     const req = {
       hostNickname: this.gameForm.value.nickname,
       preferredLanguage: this.gameForm.value.language,
+      language: this.gameForm.value.language,  // dictionary validation language
       totalRounds: GameService.DEFAULT_ROUNDS,
       timerDuration: GameService.DEFAULT_TIMER,
       categoryIds: [1] // Default category to satisfy API validation; host will reconfigure this on the setup page

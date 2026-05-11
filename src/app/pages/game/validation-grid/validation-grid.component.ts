@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter, signal, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ScoringData } from '../../../models/game.models';
+import { ScoringData, AnswerValidation } from '../../../models/game.models';
 import { CategoryDto } from '../../../models/lobby.models';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -11,17 +11,20 @@ import { TranslateModule } from '@ngx-translate/core';
   template: `
     <div class="validation-container glass-panel animate-fade-in">
       <h2 class="text-2xl font-bold mb-6 text-center text-primary-light">{{ 'VALIDATION.TITLE' | translate }}</h2>
-      
-      <div class="table-responsive">
+
+      <!-- Empty-state: all answers were dictionary-validated, no peer review needed -->
+      <div *ngIf="hasPeerReviewAnswers === false" class="auto-validated-notice">
+        <span class="auto-icon">✅</span>
+        <p>{{ 'VALIDATION.ALL_DICTIONARY_VALIDATED' | translate }}</p>
+      </div>
+
+      <div *ngIf="hasPeerReviewAnswers" class="table-responsive">
         <table class="validation-table">
           <thead>
             <tr>
               <th>{{ 'VALIDATION.PLAYER' | translate }}</th>
-              <th *ngFor="let cat of categories">
-                {{ cat.name }}
-              </th>
+              <th *ngFor="let cat of peerReviewCategories">{{ cat.name }}</th>
             </tr>
-
           </thead>
           <tbody>
             <tr *ngFor="let player of scoringData.players" [class.is-self]="player.userId === currentUserId">
@@ -29,20 +32,29 @@ import { TranslateModule } from '@ngx-translate/core';
                 <span class="nickname">{{ player.nickname }}</span>
                 <span *ngIf="player.userId === currentUserId" class="self-badge">{{ 'VALIDATION.YOU' | translate }}</span>
               </td>
-              <td *ngFor="let cat of categories">
+              <td *ngFor="let cat of peerReviewCategories">
                 <div class="answer-cell">
-                  <span class="answer-text">{{ player.answers[cat.categoryId] || '-' }}</span>
-                  
-                  <!-- Only show toggles for the current user's answers -->
-                  <div *ngIf="player.userId === currentUserId && player.answers[cat.categoryId]" class="toggle-container">
-                    <button 
-                      class="toggle-btn" 
-                      [class.valid]="validations[cat.categoryId]"
-                      [class.invalid]="!validations[cat.categoryId]"
-                      (click)="toggleValidation(cat.categoryId)">
-                      {{ (validations[cat.categoryId] ? 'VALIDATION.VALID' : 'VALIDATION.INVALID') | translate }}
-                    </button>
-                  </div>
+                  <ng-container *ngIf="peerReviewMap[player.userId]?.[cat.categoryId] as av; else noAnswer">
+                    <span class="answer-text">{{ av.answer }}</span>
+                    <!-- Peer review prompt badge -->
+                    <span class="peer-prompt" data-testid="peer-review-prompt">
+                      📖 {{ 'VALIDATION.PEER_REVIEW_NEEDED' | translate }}
+                    </span>
+
+                    <!-- Toggle only for current user's own answers -->
+                    <div *ngIf="player.userId === currentUserId" class="toggle-container">
+                      <button
+                        class="toggle-btn"
+                        [class.valid]="validations[cat.categoryId]"
+                        [class.invalid]="!validations[cat.categoryId]"
+                        (click)="toggleValidation(cat.categoryId)">
+                        {{ (validations[cat.categoryId] ? 'VALIDATION.VALID' : 'VALIDATION.INVALID') | translate }}
+                      </button>
+                    </div>
+                  </ng-container>
+                  <ng-template #noAnswer>
+                    <span class="answer-text muted">-</span>
+                  </ng-template>
                 </div>
               </td>
             </tr>
@@ -51,8 +63,8 @@ import { TranslateModule } from '@ngx-translate/core';
       </div>
 
       <div class="actions mt-8 flex justify-center">
-        <button 
-          class="btn-primary btn-large" 
+        <button
+          class="btn-primary btn-large"
           [disabled]="isSubmitting"
           (click)="submit()">
           {{ (isSubmitting ? 'VALIDATION.SUBMITTING' : 'VALIDATION.CONFIRM') | translate }}
@@ -67,6 +79,32 @@ import { TranslateModule } from '@ngx-translate/core';
       margin: 0 auto;
     }
 
+    .auto-validated-notice {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 2rem;
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #4ade80;
+    }
+    .auto-validated-notice .auto-icon { font-size: 2.5rem; }
+    .auto-validated-notice p { font-size: 1rem; }
+
+    .peer-prompt {
+      font-size: 0.72rem;
+      color: #facc15;
+      background: rgba(250, 204, 21, 0.1);
+      border: 1px solid rgba(250, 204, 21, 0.25);
+      border-radius: 6px;
+      padding: 2px 6px;
+      display: inline-block;
+    }
+
     .table-responsive {
       overflow-x: auto;
       border-radius: 12px;
@@ -79,7 +117,7 @@ import { TranslateModule } from '@ngx-translate/core';
       text-align: left;
     }
 
-    .validation-table th, 
+    .validation-table th,
     .validation-table td {
       padding: 1rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -119,7 +157,7 @@ import { TranslateModule } from '@ngx-translate/core';
     .answer-cell {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.4rem;
       min-width: 120px;
     }
 
@@ -127,10 +165,9 @@ import { TranslateModule } from '@ngx-translate/core';
       color: rgba(255, 255, 255, 0.9);
       font-style: italic;
     }
+    .answer-text.muted { color: rgba(255,255,255,0.3); }
 
-    .toggle-container {
-      margin-top: 0.25rem;
-    }
+    .toggle-container { margin-top: 0.25rem; }
 
     .toggle-btn {
       width: 100%;
@@ -170,21 +207,58 @@ import { TranslateModule } from '@ngx-translate/core';
     }
   `]
 })
-export class ValidationGridComponent implements OnInit {
+export class ValidationGridComponent implements OnInit, OnChanges {
   @Input() scoringData!: ScoringData;
   @Input() categories: CategoryDto[] = [];
   @Input() currentUserId: number = 0;
   @Input() isSubmitting: boolean = false;
-  
+
   @Output() onValidated = new EventEmitter<{ [categoryId: number]: boolean }>();
 
   public validations: { [categoryId: number]: boolean } = {};
+  /** Pre-computed map for O(1) template lookups: userId -> categoryId -> AnswerValidation */
+  public peerReviewMap: Record<number, Record<number, AnswerValidation>> = {};
+
+  /** Categories that have at least one answer requiring peer review. */
+  get peerReviewCategories(): CategoryDto[] {
+    const peerCategoryIds = new Set<number>();
+    for (const player of this.scoringData?.players ?? []) {
+      for (const av of player.answers) {
+        if (av.requiresPeerReview) {
+          peerCategoryIds.add(av.categoryId);
+        }
+      }
+    }
+    return this.categories.filter(c => peerCategoryIds.has(c.categoryId));
+  }
+
+  /** True when at least one answer in the round requires peer review. */
+  get hasPeerReviewAnswers(): boolean {
+    return this.peerReviewCategories.length > 0;
+  }
 
   ngOnInit() {
-    // Initialize all my answers as valid by default (honesty policy starts here!)
-    this.categories.forEach(cat => {
+    // Initialize validations only for categories that need peer review
+    this.peerReviewCategories.forEach(cat => {
       this.validations[cat.categoryId] = true;
     });
+    this.updatePeerReviewMap();
+  }
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['scoringData'] && this.scoringData) {
+      this.updatePeerReviewMap();
+    }
+  }
+  private updatePeerReviewMap() {
+    this.peerReviewMap = {};
+    for (const player of this.scoringData.players) {
+      this.peerReviewMap[player.userId] = {};
+      for (const av of player.answers) {
+        if (av.requiresPeerReview) {
+          this.peerReviewMap[player.userId][av.categoryId] = av;
+        }
+      }
+    }
   }
 
   toggleValidation(categoryId: number) {
