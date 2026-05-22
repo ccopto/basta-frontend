@@ -60,7 +60,9 @@ describe('SignalrService', () => {
     
     // Capture the callback registered with SignalR
     const onSpy = mockHubConnection.on as jasmine.Spy;
-    const callback = onSpy.calls.argsFor(0)[1];
+    const callArgs = onSpy.calls.allArgs().find(args => args[0] === 'TestEvent');
+    expect(callArgs).toBeDefined('TestEvent was not registered on the hubConnection');
+    const callback = callArgs![1];
     
     eventSubject.subscribe(() => {
       emittedInsideZone = NgZone.isInAngularZone();
@@ -123,7 +125,9 @@ describe('SignalrService', () => {
     
     // Simulate event firing
     const onSpy = mockHubConnection.on as jasmine.Spy;
-    const callback = onSpy.calls.argsFor(0)[1];
+    const callArgs = onSpy.calls.allArgs().find(args => args[0] === eventName);
+    expect(callArgs).toBeDefined('GameStarted was not registered on the hubConnection');
+    const callback = callArgs![1];
     callback('stale event');
     
     // Now call reset
