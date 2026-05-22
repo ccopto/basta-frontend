@@ -93,13 +93,6 @@ describe('LobbyComponent', () => {
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/game', 'ABCD']);
   }));
 
-  it('should cleanup SignalR on destroy', () => {
-    // Manually trigger some registrations
-    (component as any).registeredEvents = ['Ev1', 'Ev2'];
-    component.ngOnDestroy();
-    expect(mockSignalr.off).toHaveBeenCalledWith('Ev1');
-    expect(mockSignalr.off).toHaveBeenCalledWith('Ev2');
-  });
   it('should display error message when getGame fails', fakeAsync(() => {
     // Override the mock for this test
     mockGameService.getGame.and.returnValue(throwError(() => ({ message: 'API Error' })));

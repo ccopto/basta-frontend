@@ -327,7 +327,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private receiveLobbyUpdateSub: Subject<LobbySnapshot> | null = null;
   private gameStartedSub: Subject<void> | null = null;
-  private registeredEvents: string[] = [];
 
   constructor(
     private playerState: PlayerStateService,
@@ -359,13 +358,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    // SignalR events should be unregistered if we don't plan to reuse them
-    this.registeredEvents.forEach(e => this.signalrService.off(e));
-    this.registeredEvents = [];
-    
-    // Explicitly reset transient subjects when leaving the lobby
-    // to prevent instant replay of events like GameStarted if user joins another game
-    this.signalrService.resetEvents();
   }
 
   private async connectToLobby() {
@@ -393,7 +385,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
     // 2. Register listeners BEFORE connecting to ensure we don't miss any events during handshake
     this.receiveLobbyUpdateSub = this.signalrService.on<LobbySnapshot>('ReceiveLobbyUpdate');
-    this.registeredEvents.push('ReceiveLobbyUpdate');
     this.receiveLobbyUpdateSub.pipe(takeUntil(this.destroy$)).subscribe(snapshot => {
       this.zone.run(() => {
         try {
@@ -409,7 +400,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
     });
 
     this.gameStartedSub = this.signalrService.on<void>('GameStarted');
-    this.registeredEvents.push('GameStarted');
     this.gameStartedSub.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.router.navigate(['/game', this.gameCode]);
     });

@@ -423,14 +423,12 @@ export class GameSetupComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    this.signalrService.off('GameStarted');
   }
 
   private async initializeConnection() {
+    this.registerSignalR();
     try {
       await this.signalrService.startConnection();
-      // Host has already joined via LobbyComponent; redundant JoinGame removed.
-      this.registerSignalR();
     } catch (err) {
       this.handleError('Failed to connect to the game server.');
     }
