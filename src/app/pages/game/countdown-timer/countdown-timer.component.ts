@@ -11,7 +11,7 @@ import { Subscription, interval } from 'rxjs';
       <div class="timer-bar-container">
         <div class="timer-bar" [style.width.%]="timerProgress()"></div>
       </div>
-      <span class="timer-text">{{ timeRemainingText() }}</span>
+      <span class="timer-text" data-testid="game-timer">{{ timeRemainingText() }}</span>
     </div>
   `,
   styles: [`

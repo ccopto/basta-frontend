@@ -12,6 +12,11 @@
     "e2e:debug": "playwright test --debug",
     "e2e:report": "playwright show-report",
     "e2e:ci": "playwright test",
+    "e2e:smoke:live": "playwright test --config=playwright.live.config.ts",
+    "e2e:smoke:live:chromium": "playwright test --config=playwright.live.config.ts --project=chromium",
+    "e2e:smoke:live:chrome": "playwright test --config=playwright.live.config.ts --project=chrome",
+    "e2e:smoke:live:firefox": "playwright test --config=playwright.live.config.ts --project=firefox",
+    "e2e:smoke:live:webkit": "playwright test --config=playwright.live.config.ts --project=webkit",
     "preflight": "npm run build && npm test -- --watch=false --browsers=ChromeHeadless && npm run e2e:ci"
   },
   "private": true,

@@ -4,12 +4,14 @@
     @for (player of podium(); track $index) {
       <div class="podium-spot" [ngClass]="'spot-' + $index" [class.empty]="!player">
         @if (player) {
-          <div class="player-info animate-scale-up">
+          <div class="player-info animate-scale-up"
+               data-testid="leaderboard-player"
+               [attr.data-user-id]="player.userId">
             <span class="nickname">{{ player.nickname }}</span>
-            <span class="score">{{ player.cumulativeScore }} pts</span>
+            <span class="score" data-testid="leaderboard-score">{{ player.cumulativeScore }} pts</span>
           </div>
           <div class="pedestal">
-            <span class="rank-num">{{ player.rank }}</span>
+            <span class="rank-num" data-testid="leaderboard-rank">{{ player.rank }}</span>
           </div>
         }
       </div>
@@ -20,10 +22,12 @@
   @if (remaining().length > 0) {
     <div class="remaining-list glass-panel animate-slide-up">
       @for (player of remaining(); track player.userId) {
-        <div class="list-item">
-          <span class="rank">#{{ player.rank }}</span>
+        <div class="list-item"
+             data-testid="leaderboard-player"
+             [attr.data-user-id]="player.userId">
+          <span class="rank" data-testid="leaderboard-rank">#{{ player.rank }}</span>
           <span class="nickname">{{ player.nickname }}</span>
-          <span class="score">{{ player.cumulativeScore }} pts</span>
+          <span class="score" data-testid="leaderboard-score">{{ player.cumulativeScore }} pts</span>
         </div>
       }
     </div>

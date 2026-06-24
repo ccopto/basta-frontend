@@ -23,7 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
               🎯 {{ 'LOBBY.ROUNDS_COUNT' | translate:{ count: lobbyState.totalRounds } }}
             </span>
           </div>
-          <h1 class="game-code" data-cy="game-code-display">{{ gameCode }}</h1>
+          <h1 class="game-code" data-cy="game-code-display" data-testid="lobby-game-code">{{ gameCode }}</h1>
           <p class="subtitle" *ngIf="lobbyState" data-cy="lobby-loaded">
             {{ 'LOBBY.WAITING_FOR_PLAYERS' | translate }} ({{ lobbyState.players.length }}/5)
           </p>
@@ -43,6 +43,9 @@ import { TranslateModule } from '@ngx-translate/core';
             <div class="player-item hover-scale" 
                  *ngFor="let p of lobbyState.players"
                  data-cy="player-item"
+                 data-testid="lobby-player"
+                 [attr.data-user-id]="p.userId"
+                 [attr.data-is-host]="p.isHost"
                  [class.is-me]="p.userId === currentUserId"
                  [class.is-offline]="!p.isOnline">
               <div class="avatar" [class.host-avatar]="p.isHost">
@@ -73,6 +76,7 @@ import { TranslateModule } from '@ngx-translate/core';
         <footer class="lobby-actions" *ngIf="lobbyState">
           <div *ngIf="isHost" class="host-controls">
             <button class="btn btn-primary btn-block" 
+                    data-testid="lobby-configure"
                     [disabled]="lobbyState.players.length < 2" 
                     (click)="onConfigureGame()">
               {{ 'LOBBY.CONFIGURE_GAME' | translate }}

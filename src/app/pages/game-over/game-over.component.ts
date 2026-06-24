@@ -14,7 +14,7 @@ import { TranslateModule } from '@ngx-translate/core';
     <div class="page-container animate-fade-in">
       <header class="header text-center mb-10">
         <h1 class="text-5xl font-black text-white mb-2">{{ 'GAME_OVER.TITLE' | translate }}</h1>
-        <p class="text-xl text-primary-light font-semibold uppercase tracking-widest">
+        <p class="text-xl text-primary-light font-semibold uppercase tracking-widest" data-testid="game-over-reason">
           {{ leaderboard()?.reason || ('GAME_OVER.FINAL_STANDINGS' | translate) }}
         </p>
       </header>
