@@ -27,7 +27,10 @@ import { TranslateModule } from '@ngx-translate/core';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let player of scoringData.players" [class.is-self]="player.userId === currentUserId">
+            <tr *ngFor="let player of scoringData.players"
+                data-testid="validation-player"
+                [attr.data-user-id]="player.userId"
+                [class.is-self]="player.userId === currentUserId">
               <td class="player-cell">
                 <span class="nickname">{{ player.nickname }}</span>
                 <span *ngIf="player.userId === currentUserId" class="self-badge">{{ 'VALIDATION.YOU' | translate }}</span>
@@ -35,7 +38,9 @@ import { TranslateModule } from '@ngx-translate/core';
               <td *ngFor="let cat of peerReviewCategories">
                 <div class="answer-cell">
                   <ng-container *ngIf="peerReviewMap[player.userId]?.[cat.categoryId] as av; else noAnswer">
-                    <span class="answer-text">{{ av.answer }}</span>
+                    <span class="answer-text"
+                          data-testid="validation-answer"
+                          [attr.data-category-id]="cat.categoryId">{{ av.answer }}</span>
                     <!-- Peer review prompt badge -->
                     <span class="peer-prompt" data-testid="peer-review-prompt">
                       📖 {{ 'VALIDATION.PEER_REVIEW_NEEDED' | translate }}
@@ -45,6 +50,8 @@ import { TranslateModule } from '@ngx-translate/core';
                     <div *ngIf="player.userId === currentUserId" class="toggle-container">
                       <button
                         class="toggle-btn"
+                        data-testid="validation-toggle"
+                        [attr.data-category-id]="cat.categoryId"
                         [class.valid]="validations[cat.categoryId]"
                         [class.invalid]="!validations[cat.categoryId]"
                         (click)="toggleValidation(cat.categoryId)">
@@ -65,6 +72,7 @@ import { TranslateModule } from '@ngx-translate/core';
       <div class="actions mt-8 flex justify-center">
         <button
           class="btn-primary btn-large"
+          data-testid="validation-confirm"
           [disabled]="isSubmitting"
           (click)="submit()">
           {{ (isSubmitting ? 'VALIDATION.SUBMITTING' : 'VALIDATION.CONFIRM') | translate }}

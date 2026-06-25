@@ -23,7 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
               🎯 {{ 'LOBBY.ROUNDS_COUNT' | translate:{ count: lobbyState.totalRounds } }}
             </span>
           </div>
-          <h1 class="game-code" data-cy="game-code-display">{{ gameCode }}</h1>
+          <h1 class="game-code" data-cy="game-code-display" data-testid="lobby-game-code">{{ gameCode }}</h1>
           <p class="subtitle" *ngIf="lobbyState" data-cy="lobby-loaded">
             {{ 'LOBBY.WAITING_FOR_PLAYERS' | translate }} ({{ lobbyState.players.length }}/5)
           </p>
@@ -43,6 +43,9 @@ import { TranslateModule } from '@ngx-translate/core';
             <div class="player-item hover-scale" 
                  *ngFor="let p of lobbyState.players"
                  data-cy="player-item"
+                 data-testid="lobby-player"
+                 [attr.data-user-id]="p.userId"
+                 [attr.data-is-host]="p.isHost"
                  [class.is-me]="p.userId === currentUserId"
                  [class.is-offline]="!p.isOnline">
               <div class="avatar" [class.host-avatar]="p.isHost">
@@ -73,6 +76,7 @@ import { TranslateModule } from '@ngx-translate/core';
         <footer class="lobby-actions" *ngIf="lobbyState">
           <div *ngIf="isHost" class="host-controls">
             <button class="btn btn-primary btn-block" 
+                    data-testid="lobby-configure"
                     [disabled]="lobbyState.players.length < 2" 
                     (click)="onConfigureGame()">
               {{ 'LOBBY.CONFIGURE_GAME' | translate }}
@@ -327,7 +331,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private receiveLobbyUpdateSub: Subject<LobbySnapshot> | null = null;
   private gameStartedSub: Subject<void> | null = null;
-  private registeredEvents: string[] = [];
+  private isNavigatingToGame = false;
 
   constructor(
     private playerState: PlayerStateService,
@@ -359,13 +363,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    // SignalR events should be unregistered if we don't plan to reuse them
-    this.registeredEvents.forEach(e => this.signalrService.off(e));
-    this.registeredEvents = [];
-    
-    // Explicitly reset transient subjects when leaving the lobby
-    // to prevent instant replay of events like GameStarted if user joins another game
-    this.signalrService.resetEvents();
+    if (!this.isNavigatingToGame) {
+      this.signalrService.resetEvents();
+    }
   }
 
   private async connectToLobby() {
@@ -393,7 +393,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
     // 2. Register listeners BEFORE connecting to ensure we don't miss any events during handshake
     this.receiveLobbyUpdateSub = this.signalrService.on<LobbySnapshot>('ReceiveLobbyUpdate');
-    this.registeredEvents.push('ReceiveLobbyUpdate');
     this.receiveLobbyUpdateSub.pipe(takeUntil(this.destroy$)).subscribe(snapshot => {
       this.zone.run(() => {
         try {
@@ -409,8 +408,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
     });
 
     this.gameStartedSub = this.signalrService.on<void>('GameStarted');
-    this.registeredEvents.push('GameStarted');
     this.gameStartedSub.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.isNavigatingToGame = true;
       this.router.navigate(['/game', this.gameCode]);
     });
     

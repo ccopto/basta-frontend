@@ -89,16 +89,33 @@ export class SignalrService {
       this.registerConnectionEvents();
       
       // Re-register any listeners that were requested before the connection was built
-      this._eventSubjects.forEach((subject, eventName) => {
+      this._eventSubjects.forEach((_, eventName) => {
         if (!this.registeredHubMethods.has(eventName)) {
           this.hubConnection!.on(eventName, (data: any) => {
-            this.zone.run(() => {
-              subject.next(data);
-            });
+            this.emitEvent(eventName, data);
           });
           this.registeredHubMethods.add(eventName);
         }
       });
+
+      // EAGERLY REGISTER ALL CORE EVENTS TO PREVENT DROPS DURING ROUTING
+      const coreEvents = [
+        'ReceiveLobbyUpdate', 'GameStarted', 'RoundStarted', 
+        'RoundStopped', 'DisplayScoring', 'ReceiveGameScore', 
+        'GameOver', 'Error'
+      ];
+      
+      for (const eventName of coreEvents) {
+        if (!this._eventSubjects.has(eventName)) {
+          this._eventSubjects.set(eventName, new ReplaySubject<any>(1));
+        }
+        if (!this.registeredHubMethods.has(eventName)) {
+          this.hubConnection.on(eventName, (data: any) => {
+            this.emitEvent(eventName, data);
+          });
+          this.registeredHubMethods.add(eventName);
+        }
+      }
     }
 
     if (this.hubConnection.state !== signalR.HubConnectionState.Disconnected) {
@@ -135,6 +152,7 @@ export class SignalrService {
     if (this.hubConnection) {
       await this.hubConnection.stop();
       this.hubConnection = null;
+      this.currentGameCode = null;
       this.resetEvents();
       this.connectionStateSubject.next('disconnected');
     }
@@ -152,6 +170,9 @@ export class SignalrService {
     }
     try {
       const result = await this.hubConnection.invoke<T>(methodName, ...args);
+      if (methodName === 'JoinGame' && args.length > 0 && typeof args[0] === 'string') {
+        this.currentGameCode = args[0];
+      }
       return result;
     } catch (err) {
       console.error(`[SignalR] Invoke ${methodName} FAILED:`, err);
@@ -166,20 +187,28 @@ export class SignalrService {
    * @param eventName The name of the SignalR event to listen for.
    */
   on<T>(eventName: string): Subject<T> {
-    if (!this._eventSubjects.has(eventName)) {
-      this._eventSubjects.set(eventName, new ReplaySubject<any>(1));
-    }
-    const subject = this._eventSubjects.get(eventName)!;
+    const subject = this.ensureEventSubject<T>(eventName);
 
     if (this.hubConnection && !this.registeredHubMethods.has(eventName)) {
       this.hubConnection.on(eventName, (data: T) => {
-        this.zone.run(() => {
-          subject.next(data);
-        });
+        this.emitEvent(eventName, data);
       });
       this.registeredHubMethods.add(eventName);
     }
     return subject;
+  }
+
+  private emitEvent<T>(eventName: string, data: T): void {
+    this.zone.run(() => {
+      this.ensureEventSubject<T>(eventName).next(data);
+    });
+  }
+
+  private ensureEventSubject<T>(eventName: string): Subject<T> {
+    if (!this._eventSubjects.has(eventName)) {
+      this._eventSubjects.set(eventName, new ReplaySubject<T>(1));
+    }
+    return this._eventSubjects.get(eventName)!;
   }
 
   /**
@@ -187,9 +216,8 @@ export class SignalrService {
    * @param eventName The name of the SignalR event to stop listening for.
    */
   off(eventName: string): void {
-    if (this.hubConnection) {
-      this.hubConnection.off(eventName);
-    }
+    // Intentionally no-op to prevent components from severing global connection listeners.
+    // Components should unsubscribe from the RxJS Subject via takeUntil instead.
   }
 
   /**

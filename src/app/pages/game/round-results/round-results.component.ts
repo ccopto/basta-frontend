@@ -14,12 +14,16 @@ import { TranslateModule } from '@ngx-translate/core';
       <p class="text-center text-white/60 mb-8">{{ 'RESULTS.TITLE' | translate }}</p>
       
       <div class="results-grid">
-        <div *ngFor="let player of scores" class="player-result-card" [class.is-self]="player.userId === currentUserId">
+        <div *ngFor="let player of scores"
+             class="player-result-card"
+             data-testid="result-player"
+             [attr.data-user-id]="player.userId"
+             [class.is-self]="player.userId === currentUserId">
           <div class="card-header">
             <span class="nickname">{{ player.nickname }}</span>
             <div class="score-summary">
-              <span class="round-pts">+{{ player.roundScore }} pts</span>
-              <span class="total-pts">{{ 'RESULTS.TOTAL' | translate }}: {{ player.cumulativeScore }}</span>
+              <span class="round-pts" data-testid="result-round-score">+{{ player.roundScore }} pts</span>
+              <span class="total-pts" data-testid="result-cumulative-score">{{ 'RESULTS.TOTAL' | translate }}: {{ player.cumulativeScore }}</span>
             </div>
           </div>
           
@@ -48,7 +52,7 @@ import { TranslateModule } from '@ngx-translate/core';
       </div>
 
       <div *ngIf="isHost" class="actions mt-10 flex justify-center">
-        <button class="btn-primary btn-xl" (click)="onNextRound.emit()">
+        <button class="btn-primary btn-xl" data-testid="result-continue" (click)="onNextRound.emit()">
           {{ 'RESULTS.START_NEXT_ROUND' | translate }}
         </button>
       </div>

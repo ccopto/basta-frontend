@@ -38,6 +38,7 @@ import { PlayerStateService } from '../../services/player-state.service';
               <input 
                 type="text" 
                 id="nickname" 
+                data-testid="home-create-nickname"
                 formControlName="nickname" 
                 placeholder="e.g. WordMaster99" 
                 maxlength="50"
@@ -60,13 +61,14 @@ import { PlayerStateService } from '../../services/player-state.service';
               <button 
                 type="submit" 
                 class="btn btn-primary" 
+                data-testid="home-create-game"
                 [disabled]="gameForm.invalid || isLoading">
                 {{ (isLoading ? 'HOME.CREATING' : 'HOME.CREATE_GAME') | translate }}
               </button>
               
               <div class="divider"><span>{{ 'HOME.OR' | translate }}</span></div>
               
-              <button type="button" class="btn btn-secondary" (click)="onJoinGame()">
+              <button type="button" class="btn btn-secondary" data-testid="home-open-join" (click)="onJoinGame()">
                 {{ 'HOME.JOIN_EXISTING' | translate }}
               </button>
             </div>
@@ -82,6 +84,7 @@ import { PlayerStateService } from '../../services/player-state.service';
               <input 
                 type="text" 
                 id="joinNickname" 
+                data-testid="home-join-nickname"
                 formControlName="nickname" 
                 placeholder="e.g. WordMaster99" 
                 maxlength="50"
@@ -97,6 +100,7 @@ import { PlayerStateService } from '../../services/player-state.service';
               <input 
                 type="text" 
                 id="gameCode" 
+                data-testid="home-join-code"
                 formControlName="gameCode" 
                 placeholder="e.g. ABCD" 
                 maxlength="10"
@@ -120,6 +124,7 @@ import { PlayerStateService } from '../../services/player-state.service';
               <button 
                 type="submit" 
                 class="btn btn-primary" 
+                data-testid="home-join-game"
                 [disabled]="joinForm.invalid || isLoading">
                 {{ (isLoading ? 'HOME.JOINING' : 'HOME.JOIN_GAME') | translate }}
               </button>

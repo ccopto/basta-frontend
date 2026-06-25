@@ -160,6 +160,7 @@ export class GameComponent implements OnInit, OnDestroy {
     // Listen for Results Phase
     this.subscriptions.push(
       this.signalrService.on<PlayerScore[]>('ReceiveGameScore').subscribe((scores) => {
+        this.isSubmittingValidation.set(false);
         this.roundScores.set(scores);
         this.currentPhase.set('results');
       })
@@ -185,6 +186,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.currentPhase.set('playing');
     this.scoringData.set(null);
     this.roundScores.set([]);
+    this.isSubmittingValidation.set(false);
 
     // Restore any previously saved answers for this specific round
     this.loadAnswersFromLocal();
@@ -296,4 +298,3 @@ export class GameComponent implements OnInit, OnDestroy {
     }
   }
 }
-

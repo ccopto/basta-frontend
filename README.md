@@ -20,7 +20,36 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 
 ## Running end-to-end tests
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+Run the mocked Angular/Playwright suite:
+
+```bash
+npm run e2e:ci
+```
+
+Run the full-game smoke test against the live Docker Compose stack from the
+monorepo root:
+
+```bash
+docker compose up -d --build --wait
+npm --prefix basta-frontend run e2e:smoke:live
+docker compose down
+```
+
+The live suite uses two isolated players and completes a two-round game through
+Nginx, REST, SignalR, ASP.NET Core, and SQLite. Run one browser project with:
+
+```bash
+npm run e2e:smoke:live:chromium
+npm run e2e:smoke:live:chrome
+npm run e2e:smoke:live:firefox
+npm run e2e:smoke:live:webkit
+```
+
+Install the managed browser engines once with:
+
+```bash
+npx playwright install chromium firefox webkit
+```
 
 ## Further help
 

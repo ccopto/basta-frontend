@@ -18,6 +18,8 @@ import { TranslateModule } from '@ngx-translate/core';
           <input 
             [id]="'cat-' + cat.categoryId"
             type="text" 
+            data-testid="game-answer"
+            [attr.data-category-id]="cat.categoryId"
             [formControlName]="cat.categoryId.toString()"
             [placeholder]="'GAME.STARTS_WITH' | translate:{ letter: currentLetter.toUpperCase() }"
             autocomplete="off"

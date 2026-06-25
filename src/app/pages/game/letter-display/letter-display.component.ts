@@ -18,7 +18,7 @@ import { CommonModule } from '@angular/common';
     
     <div class="active-letter">
       <span class="label">Letter</span>
-      <span class="value">{{ letter || '?' }}</span>
+      <span class="value" data-testid="game-letter">{{ letter || '?' }}</span>
     </div>
   `,
   styles: [`

@@ -11,7 +11,7 @@
     <div class="header-main">
       <div class="round-info">
         <span class="label">{{ 'GAME.ROUND_LABEL' | translate }}</span>
-        <span class="value">{{ roundNumber() }}</span>
+        <span class="value" data-testid="game-round-number">{{ roundNumber() }}</span>
       </div>
       
       <!-- Countdown Timer -->
@@ -63,6 +63,7 @@
     <footer class="game-footer">
       <button 
         class="btn btn-primary btn-lg basta-btn" 
+        data-testid="game-basta"
         [disabled]="!isRoundRunning"
         (click)="callBasta()"
       >
@@ -70,6 +71,5 @@
       </button>
     </footer>
   }
-
 
 

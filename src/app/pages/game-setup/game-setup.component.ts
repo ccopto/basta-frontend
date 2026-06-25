@@ -39,9 +39,9 @@ import { TranslateModule } from '@ngx-translate/core';
             <div class="setting-item animate-fade-in" style="animation-delay: 100ms">
               <label>{{ 'SETUP.ROUNDS' | translate }}</label>
               <div class="stepper">
-                <button type="button" class="step-btn" (click)="updateRounds(-1)" [disabled]="totalRounds() <= GAME_DEFAULTS.minRounds">−</button>
+                <button type="button" class="step-btn" data-testid="setup-round-decrement" (click)="updateRounds(-1)" [disabled]="totalRounds() <= GAME_DEFAULTS.minRounds">−</button>
                 <div class="step-value-container">
-                  <span class="step-value">{{ totalRounds() }}</span>
+                  <span class="step-value" data-testid="setup-round-count">{{ totalRounds() }}</span>
                   <span class="step-unit">{{ 'SETUP.ROUNDS' | translate }}</span>
                 </div>
                 <button type="button" class="step-btn" (click)="updateRounds(1)" [disabled]="totalRounds() >= GAME_DEFAULTS.maxRounds">+</button>
@@ -51,9 +51,9 @@ import { TranslateModule } from '@ngx-translate/core';
             <div class="setting-item animate-fade-in" style="animation-delay: 200ms">
               <label>{{ 'SETUP.TIMER' | translate }}</label>
               <div class="stepper">
-                <button type="button" class="step-btn" (click)="updateTimer(-15)" [disabled]="timerDuration() <= GAME_DEFAULTS.minTimer">−</button>
+                <button type="button" class="step-btn" data-testid="setup-timer-decrement" (click)="updateTimer(-15)" [disabled]="timerDuration() <= GAME_DEFAULTS.minTimer">−</button>
                 <div class="step-value-container">
-                  <span class="step-value">{{ timerDuration() }}</span>
+                  <span class="step-value" data-testid="setup-timer-value">{{ timerDuration() }}</span>
                   <span class="step-unit">{{ 'SETUP.TIMER_SECONDS' | translate }}</span>
                 </div>
                 <button type="button" class="step-btn" (click)="updateTimer(15)" [disabled]="timerDuration() >= GAME_DEFAULTS.maxTimer">+</button>
@@ -89,6 +89,8 @@ import { TranslateModule } from '@ngx-translate/core';
             <div class="categories-grid">
               <div class="category-card hover-scale" 
                    *ngFor="let cat of availableCategories"
+                   data-testid="setup-category"
+                   [attr.data-category-id]="cat.categoryId"
                    [class.selected]="selectedCategoryIds.has(cat.categoryId)"
                    (click)="toggleCategory(cat.categoryId)">
                 <div class="cat-content">
@@ -106,6 +108,7 @@ import { TranslateModule } from '@ngx-translate/core';
               {{ 'SETUP.BACK_TO_LOBBY' | translate }}
             </button>
             <button type="button" class="btn btn-primary btn-block" 
+                    data-testid="setup-start-game"
                     [disabled]="selectedCategoryIds.size === 0 || isStarting" 
                     (click)="onStartGame()">
               {{ (isStarting ? 'HOME.CREATING' : 'SETUP.START_GAME') | translate }}
@@ -423,14 +426,12 @@ export class GameSetupComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    this.signalrService.off('GameStarted');
   }
 
   private async initializeConnection() {
+    this.registerSignalR();
     try {
       await this.signalrService.startConnection();
-      // Host has already joined via LobbyComponent; redundant JoinGame removed.
-      this.registerSignalR();
     } catch (err) {
       this.handleError('Failed to connect to the game server.');
     }
