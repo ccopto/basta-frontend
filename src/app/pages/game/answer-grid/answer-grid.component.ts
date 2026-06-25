@@ -74,6 +74,7 @@ export class AnswerGridComponent implements OnChanges, OnDestroy {
   @Input() categories: CategoryDto[] = [];
   @Input() currentLetter: string = '';
   @Input() isLocked: boolean = false;
+  @Input() restoredAnswers: AnswerMap = {};
   
   @Output() answersChanged = new EventEmitter<AnswerMap>();
 
@@ -87,13 +88,30 @@ export class AnswerGridComponent implements OnChanges, OnDestroy {
     if (changes['isLocked']) {
       this.toggleLock();
     }
+    if (changes['restoredAnswers'] && !changes['categories'] && this.form) {
+      const restored = changes['restoredAnswers'].currentValue || {};
+      const patchValues: any = {};
+      let hasDifference = false;
+      this.categories.forEach(cat => {
+        const key = cat.categoryId.toString();
+        const control = this.form.get(key);
+        const restoredVal = restored[cat.categoryId] || '';
+        if (control && control.value !== restoredVal) {
+          patchValues[key] = restoredVal;
+          hasDifference = true;
+        }
+      });
+      if (hasDifference) {
+        this.form.patchValue(patchValues, { emitEvent: false });
+      }
+    }
   }
 
   private initForm() {
     this.formValueSub?.unsubscribe();
     const group: any = {};
     this.categories.forEach(cat => {
-      group[cat.categoryId.toString()] = new FormControl('');
+      group[cat.categoryId.toString()] = new FormControl(this.restoredAnswers[cat.categoryId] || '');
     });
     this.form = new FormGroup(group);
     

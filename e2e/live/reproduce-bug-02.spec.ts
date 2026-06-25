@@ -7,10 +7,6 @@ test.describe('Bug-02: Live Integration/Reproduction Test', () => {
     ignoreHTTPSErrors: true 
   });
 
-  // Skip this test in standard mock runs and CI pipeline unless LIVE_TEST=true is set
-  test.beforeEach(({}, testInfo) => {
-    test.skip(!process.env['LIVE_TEST'], 'Skipping live integration test. Set LIVE_TEST=true to run.');
-  });
 
   test('should reproduce Host stuck in Setup and Guest stranded with question mark', async ({ browser }) => {
     console.log('Initiating Bug-02 Reproduction test against live containers...');

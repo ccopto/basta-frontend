@@ -106,4 +106,53 @@ describe('AnswerGridComponent', () => {
     const input = fixture.debugElement.query(By.css('input')).nativeElement;
     expect(input.placeholder).toBeTruthy();
   });
+
+  it('should initialize input values from restoredAnswers', () => {
+    component.categories = [{ categoryId: 1, name: 'Fruit' }];
+    (component as any).restoredAnswers = { 1: 'Apple' };
+    component.ngOnChanges({
+      categories: { 
+        currentValue: component.categories, 
+        previousValue: [], 
+        firstChange: true, 
+        isFirstChange: () => true 
+      }
+    });
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input')).nativeElement;
+    expect(input.value).toBe('Apple');
+  });
+
+  it('should patch form values when restoredAnswers changes mid-lifecycle', () => {
+    component.categories = [{ categoryId: 1, name: 'Fruit' }];
+    component.ngOnChanges({
+      categories: { 
+        currentValue: component.categories, 
+        previousValue: [], 
+        firstChange: true, 
+        isFirstChange: () => true 
+      }
+    });
+    fixture.detectChanges();
+
+    let input = fixture.debugElement.query(By.css('input')).nativeElement;
+    expect(input.value).toBe('');
+
+    // Simulate change in restoredAnswers
+    const restoredVal = { 1: 'Banana' };
+    (component as any).restoredAnswers = restoredVal;
+    component.ngOnChanges({
+      restoredAnswers: {
+        currentValue: restoredVal,
+        previousValue: {},
+        firstChange: false,
+        isFirstChange: () => false
+      }
+    });
+    fixture.detectChanges();
+
+    input = fixture.debugElement.query(By.css('input')).nativeElement;
+    expect(input.value).toBe('Banana');
+  });
 });

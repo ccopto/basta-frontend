@@ -194,4 +194,82 @@ describe('GameComponent', () => {
     tick();
     expect(mockSignalr.invoke).toHaveBeenCalledWith('StartRound');
   }));
+
+  it('should fetch categories using the player state language when selectedCategoryIds exist in state', fakeAsync(() => {
+    mockGameService.getCategories.calls.reset();
+    
+    Object.defineProperty(mockPlayerState, 'currentState', {
+      get: () => ({ gameCode: 'ABCD', nickname: 'Nick', userId: 1, selectedCategoryIds: [1], hostUserId: 1, language: 'es' }),
+      configurable: true
+    });
+    
+    const localFixture = TestBed.createComponent(GameComponent);
+    localFixture.detectChanges();
+    tick();
+    
+    expect(mockGameService.getCategories).toHaveBeenCalledWith('es');
+  }));
+
+  it('should fetch categories using the game snapshot language when selectedCategoryIds do not exist in state', fakeAsync(() => {
+    mockGameService.getCategories.calls.reset();
+    
+    Object.defineProperty(mockPlayerState, 'currentState', {
+      get: () => ({ gameCode: 'ABCD', nickname: 'Nick', userId: 1, selectedCategoryIds: [], hostUserId: 1, language: 'en' }),
+      configurable: true
+    });
+    
+    mockGameService.getGame.and.returnValue(of({ selectedCategoryIds: [2], language: 'fr' } as any));
+    
+    const localFixture = TestBed.createComponent(GameComponent);
+    localFixture.detectChanges();
+    tick();
+    
+    expect(mockGameService.getCategories).toHaveBeenCalledWith('fr');
+  }));
+
+  it('should restore answers from localStorage and update the answers signal', fakeAsync(() => {
+    const gameCode = 'ABCD';
+    const roundNum = 1;
+    const key = `basta_answers_${gameCode}_${roundNum}`;
+    const savedAnswers = { 1: 'Apple' };
+    localStorage.setItem(key, JSON.stringify(savedAnswers));
+
+    component.answers.set({ 1: '' });
+    
+    roundStartedSubject.next({
+      roundNumber: roundNum,
+      letter: 'A',
+      timerDuration: 60,
+      serverTime: new Date().toISOString()
+    });
+    tick();
+    fixture.detectChanges();
+
+    expect(component.answers()).toEqual({ 1: 'Apple' });
+
+    localStorage.removeItem(key);
+  }));
+
+  it('should save answers to localStorage and update the signal onAnswersChanged', fakeAsync(() => {
+    const gameCode = 'ABCD';
+    const roundNum = 1;
+    const key = `basta_answers_${gameCode}_${roundNum}`;
+    localStorage.removeItem(key);
+
+    component.roundActive.set(true);
+    component.isLocked.set(false);
+    component.roundNumber.set(roundNum);
+
+    const updatedAnswers = { 1: 'Apricot' };
+    component.onAnswersChanged(updatedAnswers);
+    tick();
+
+    expect(component.answers()).toEqual(updatedAnswers);
+    const saved = localStorage.getItem(key);
+    expect(saved).toBeTruthy();
+    expect(JSON.parse(saved!)).toEqual(updatedAnswers);
+
+    localStorage.removeItem(key);
+  }));
 });
+

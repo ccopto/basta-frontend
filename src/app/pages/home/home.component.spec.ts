@@ -97,4 +97,22 @@ describe('HomeComponent', () => {
     expect(component.errorMessage).toBe('Invalid code');
     expect(component.isLoading).toBeFalse();
   }));
+
+  it('should not contain a stray plus sign between form groups', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const form = compiled.querySelector('form');
+    expect(form).toBeTruthy();
+    
+    const walker = document.createTreeWalker(form!, NodeFilter.SHOW_TEXT);
+    let hasStrayPlus = false;
+    let node = walker.nextNode();
+    while (node) {
+      if (node.textContent?.trim() === '+') {
+        hasStrayPlus = true;
+        break;
+      }
+      node = walker.nextNode();
+    }
+    expect(hasStrayPlus).toBeFalse();
+  });
 });

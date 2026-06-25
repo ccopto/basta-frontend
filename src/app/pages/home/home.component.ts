@@ -48,7 +48,7 @@ import { PlayerStateService } from '../../services/player-state.service';
                 {{ 'HOME.ERRORS.NICKNAME_REQUIRED' | translate }}
               </div>
             </div>
-+
+
             <div class="form-group">
               <label for="language">{{ 'HOME.GAME_LANGUAGE' | translate }}</label>
               <select id="language" formControlName="language" (change)="onLanguageChange($event)">

@@ -21,6 +21,8 @@ export class SignalrService {
 
   /** Tracks the currently joined game group to prevent redundant JoinGame calls. */
   public currentGameCode: string | null = null;
+  public currentUserId: number | null = null;
+  public currentNickname: string | null = null;
 
   /** Registry of Subjects per event name to ensure stability and multi-consumer support. */
   private readonly _eventSubjects = new Map<string, Subject<any>>();
@@ -153,6 +155,8 @@ export class SignalrService {
       await this.hubConnection.stop();
       this.hubConnection = null;
       this.currentGameCode = null;
+      this.currentUserId = null;
+      this.currentNickname = null;
       this.resetEvents();
       this.connectionStateSubject.next('disconnected');
     }
@@ -170,8 +174,10 @@ export class SignalrService {
     }
     try {
       const result = await this.hubConnection.invoke<T>(methodName, ...args);
-      if (methodName === 'JoinGame' && args.length > 0 && typeof args[0] === 'string') {
-        this.currentGameCode = args[0];
+      if (methodName === 'JoinGame' && args.length >= 3) {
+        this.currentGameCode = args[0] as string;
+        this.currentUserId = args[1] as number;
+        this.currentNickname = args[2] as string;
       }
       return result;
     } catch (err) {
@@ -245,6 +251,12 @@ export class SignalrService {
     this.hubConnection.onreconnected(() => {
       this.zone.run(() => {
         this.connectionStateSubject.next('connected');
+        if (this.currentGameCode && this.currentUserId !== null && this.currentNickname) {
+          console.log('[SignalR] Auto-rejoining group after reconnect:', this.currentGameCode);
+          this.invoke('JoinGame', this.currentGameCode, this.currentUserId, this.currentNickname).catch(err => {
+            console.error('[SignalR] Auto-rejoin failed:', err);
+          });
+        }
       });
     });
 

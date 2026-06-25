@@ -255,4 +255,50 @@ describe('SignalrService', () => {
     TestBed.inject(NgZone).run(() => callback());
     expect(currentState).toBe('disconnected');
   });
+
+  it('should capture userId and nickname on JoinGame invoke', async () => {
+    mockHubConnection.invoke.and.returnValue(Promise.resolve());
+    await service.startConnection();
+    
+    expect(service.currentUserId).toBeNull();
+    expect(service.currentNickname).toBeNull();
+
+    await service.invoke('JoinGame', 'CODE', 42, 'Alice');
+
+    expect(service.currentGameCode).toBe('CODE');
+    expect(service.currentUserId).toBe(42);
+    expect(service.currentNickname).toBe('Alice');
+  });
+
+  it('should auto-rejoin game group on reconnected event if context is present', async () => {
+    mockHubConnection.invoke.and.returnValue(Promise.resolve());
+    await service.startConnection();
+
+    // Setup stored context
+    service.currentGameCode = 'REJOIN';
+    service.currentUserId = 99;
+    service.currentNickname = 'Bob';
+
+    const reconnectedSpy = mockHubConnection.onreconnected as jasmine.Spy;
+    const callback = reconnectedSpy.calls.argsFor(0)[0];
+
+    // Trigger reconnect callback
+    TestBed.inject(NgZone).run(() => callback());
+
+    // Expect invoke('JoinGame', 'REJOIN', 99, 'Bob') was called automatically
+    expect(mockHubConnection.invoke).toHaveBeenCalledWith('JoinGame', 'REJOIN', 99, 'Bob');
+  });
+
+  it('should clear player context properties when stopConnection is called', async () => {
+    await service.startConnection();
+    service.currentGameCode = 'CODE';
+    service.currentUserId = 42;
+    service.currentNickname = 'Alice';
+
+    await service.stopConnection();
+
+    expect(service.currentGameCode).toBeNull();
+    expect(service.currentUserId).toBeNull();
+    expect(service.currentNickname).toBeNull();
+  });
 });

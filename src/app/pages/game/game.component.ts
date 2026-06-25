@@ -56,7 +56,7 @@ export class GameComponent implements OnInit, OnDestroy {
   
   // --- Answer Grid State ---
   public categories = signal<CategoryDto[]>([]);
-  public answers: AnswerMap = {};
+  public answers = signal<AnswerMap>({});
   
   // --- UI/Animation Signals ---
   public showLetterOverlay = signal<boolean>(false);
@@ -107,20 +107,26 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   private loadCategories(selectedIds: number[]) {
+    const lang = this.playerState.currentState.language || 'en';
     if (selectedIds && selectedIds.length > 0) {
-      this.gameService.getCategories().subscribe(allCats => {
+      this.gameService.getCategories(lang).subscribe(allCats => {
         const filtered = allCats.filter(c => selectedIds.includes(c.categoryId));
         this.categories.set(filtered);
-        filtered.forEach(c => this.answers[c.categoryId] = '');
+        const initialAnswers: AnswerMap = {};
+        filtered.forEach(c => initialAnswers[c.categoryId] = '');
+        this.answers.set(initialAnswers);
       });
     } else {
       // Fallback: If not in local state (joined player), fetch from server snapshot
       this.gameService.getGame(this.gameCode).subscribe(game => {
         if (game && game.selectedCategoryIds) {
-          this.gameService.getCategories().subscribe(allCats => {
+          const gameLang = game.language || lang;
+          this.gameService.getCategories(gameLang).subscribe(allCats => {
             const filtered = allCats.filter(c => game.selectedCategoryIds.includes(c.categoryId));
             this.categories.set(filtered);
-            filtered.forEach(c => this.answers[c.categoryId] = '');
+            const initialAnswers: AnswerMap = {};
+            filtered.forEach(c => initialAnswers[c.categoryId] = '');
+            this.answers.set(initialAnswers);
           });
         }
       });
@@ -216,14 +222,14 @@ export class GameComponent implements OnInit, OnDestroy {
 
 
   public onAnswersChanged(updatedAnswers: AnswerMap) {
-    this.answers = updatedAnswers;
+    this.answers.set(updatedAnswers);
     this.saveAnswersToLocal();
   }
 
   private saveAnswersToLocal() {
     if (this.roundActive() && !this.isLocked()) {
       const key = `basta_answers_${this.gameCode}_${this.roundNumber()}`;
-      localStorage.setItem(key, JSON.stringify(this.answers));
+      localStorage.setItem(key, JSON.stringify(this.answers()));
     }
   }
 
@@ -233,12 +239,18 @@ export class GameComponent implements OnInit, OnDestroy {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        const currentAnswers = { ...this.answers() };
+        let hasChanged = false;
         // Only merge keys that exist in our current categories
         Object.keys(parsed).forEach(catId => {
-          if (this.answers.hasOwnProperty(catId)) {
-            this.answers[Number(catId)] = parsed[catId];
+          if (currentAnswers.hasOwnProperty(catId)) {
+            currentAnswers[Number(catId)] = parsed[catId];
+            hasChanged = true;
           }
         });
+        if (hasChanged) {
+          this.answers.set(currentAnswers);
+        }
       } catch (e) {
         console.warn('Failed to parse saved answers', e);
       }
@@ -269,7 +281,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   private async submitAnswers() {
     try {
-      await this.signalrService.invoke('SubmitAnswers', this.answers);
+      await this.signalrService.invoke('SubmitAnswers', this.answers());
       this.clearAnswersFromLocal();
     } catch (err) {
       console.error('Failed to submit answers', err);
