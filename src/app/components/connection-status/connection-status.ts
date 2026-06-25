@@ -9,7 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [CommonModule, TranslateModule],
   template: `
     <div class="status-container" *ngIf="(state | async) as s; else noState">
-      <div class="status-badge" [class]="s" *ngIf="s !== 'connected'">
+      <div class="status-badge" [ngClass]="s" *ngIf="s !== 'connected'">
         <span class="pulse-dot"></span>
         <span class="status-text">
           {{ 'ERRORS.CONNECTION_' + s.toUpperCase() | translate }}
@@ -40,10 +40,10 @@ import { TranslateModule } from '@ngx-translate/core';
       font-size: var(--font-size-sm);
       font-weight: 600;
     }
-    .reconnecting .status-badge { border-color: var(--color-warning); color: var(--color-warning); }
-    .reconnecting .pulse-dot { background: var(--color-warning); }
-    .disconnected .status-badge { border-color: var(--color-error); color: var(--color-error); }
-    .disconnected .pulse-dot { background: var(--color-error); }
+    .status-badge.reconnecting { border-color: var(--color-warning); color: var(--color-warning); }
+    .status-badge.reconnecting .pulse-dot { background: var(--color-warning); }
+    .status-badge.disconnected { border-color: var(--color-error); color: var(--color-error); }
+    .status-badge.disconnected .pulse-dot { background: var(--color-error); }
 
     .pulse-dot {
       width: 8px;
