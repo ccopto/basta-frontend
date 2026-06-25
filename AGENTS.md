@@ -98,3 +98,4 @@ Before pushing any code or creating a PR, the following must be verified locally
 1. `npm run build` must pass (to catch Angular template errors).
 2. `npm test` must pass (all unit tests must succeed).
 3. `npm run e2e:ci` must pass (all Playwright E2E smoke tests must succeed).
+4. `npm run e2e:smoke:live` must pass (all live multi-browser smoke tests must succeed).

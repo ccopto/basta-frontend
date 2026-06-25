@@ -17,7 +17,7 @@
     "e2e:smoke:live:chrome": "playwright test --config=playwright.live.config.ts --project=chrome",
     "e2e:smoke:live:firefox": "playwright test --config=playwright.live.config.ts --project=firefox",
     "e2e:smoke:live:webkit": "playwright test --config=playwright.live.config.ts --project=webkit",
-    "preflight": "npm run build && npm test -- --watch=false --browsers=ChromeHeadless && npm run e2e:ci"
+    "preflight": "npm run build && npm test -- --watch=false --browsers=ChromeHeadless && npm run e2e:ci && npm run e2e:smoke:live"
   },
   "private": true,
   "dependencies": {
