@@ -107,8 +107,9 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   private loadCategories(selectedIds: number[]) {
+    const lang = this.playerState.currentState.language || 'en';
     if (selectedIds && selectedIds.length > 0) {
-      this.gameService.getCategories().subscribe(allCats => {
+      this.gameService.getCategories(lang).subscribe(allCats => {
         const filtered = allCats.filter(c => selectedIds.includes(c.categoryId));
         this.categories.set(filtered);
         filtered.forEach(c => this.answers[c.categoryId] = '');
@@ -117,7 +118,8 @@ export class GameComponent implements OnInit, OnDestroy {
       // Fallback: If not in local state (joined player), fetch from server snapshot
       this.gameService.getGame(this.gameCode).subscribe(game => {
         if (game && game.selectedCategoryIds) {
-          this.gameService.getCategories().subscribe(allCats => {
+          const gameLang = game.language || lang;
+          this.gameService.getCategories(gameLang).subscribe(allCats => {
             const filtered = allCats.filter(c => game.selectedCategoryIds.includes(c.categoryId));
             this.categories.set(filtered);
             filtered.forEach(c => this.answers[c.categoryId] = '');

@@ -439,7 +439,6 @@ export class GameSetupComponent implements OnInit, OnDestroy {
 
   private loadData() {
     this.loading = true;
-    const lang = this.playerState.currentState.language;
     
     // FE-2: Refactor using switchMap to avoid nested subscribes anti-pattern
     this.gameService.getGame(this.gameCode).pipe(
@@ -450,11 +449,12 @@ export class GameSetupComponent implements OnInit, OnDestroy {
           // FE-5: Map backend 'totalRounds' (which tracks winning condition/rounds) to local 'totalRounds' signal
           this.totalRounds.set(snapshot.totalRounds);
           this.timerDuration.set(snapshot.timerDuration);
+          this.gameLanguage.set(snapshot.language || 'en');
           this.cdr.detectChanges();
         });
       }),
       switchMap(() => {
-        return this.gameService.getCategories(lang);
+        return this.gameService.getCategories(this.gameLanguage());
       }),
       takeUntil(this.destroy$)
     ).subscribe({
@@ -503,6 +503,12 @@ export class GameSetupComponent implements OnInit, OnDestroy {
 
   setLanguage(lang: string) {
     this.gameLanguage.set(lang);
+    this.gameService.getCategories(lang).subscribe(cats => {
+      this.availableCategories = cats;
+      const validIds = new Set(cats.map(c => c.categoryId));
+      this.selectedCategoryIds = new Set([...this.selectedCategoryIds].filter(id => validIds.has(id)));
+      this.cdr.detectChanges();
+    });
   }
 
   onBack() {
@@ -518,7 +524,7 @@ export class GameSetupComponent implements OnInit, OnDestroy {
     try {
       // 1. Sync all settings to server
       const catArray = Array.from(this.selectedCategoryIds);
-      await this.signalrService.invoke('UpdateGameSettings', this.totalRounds(), this.timerDuration(), catArray);
+      await this.signalrService.invoke('UpdateGameSettings', this.totalRounds(), this.timerDuration(), catArray, this.gameLanguage());
       
       // 1.1 Save locally to state (including game language for dictionary validation)
       this.playerState.updateState({ 

@@ -174,4 +174,25 @@ describe('LobbyComponent', () => {
     // Already triggered in beforeEach
     expect(mockPlayerState.updateState).toHaveBeenCalledWith(jasmine.objectContaining({ hostUserId: 1 }));
   }));
+
+  it('should update PlayerState with language and selectedCategoryIds from ReceiveLobbyUpdate', fakeAsync(() => {
+    tick();
+    const updateSnapshot = {
+      gameCode: 'ABCD',
+      players: [{ userId: 1, nickname: 'Host', isHost: true, isOnline: true }],
+      totalRounds: 5,
+      hostUserId: 1,
+      language: 'es',
+      selectedCategoryIds: [1, 3]
+    };
+    
+    lobbyUpdateSubject.next(updateSnapshot);
+    fixture.detectChanges();
+
+    expect(mockPlayerState.updateState).toHaveBeenCalledWith(jasmine.objectContaining({
+      hostUserId: 1,
+      language: 'es',
+      selectedCategoryIds: [1, 3]
+    }));
+  }));
 });

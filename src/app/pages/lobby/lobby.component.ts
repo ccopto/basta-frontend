@@ -376,7 +376,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
           try {
             this.lobbyState = snapshot;
             this.emptySlots = Array(Math.max(0, 5 - (snapshot?.players?.length || 0))).fill(null);
-            this.playerState.updateState({ hostUserId: snapshot.hostUserId });
+            this.playerState.updateState({
+              hostUserId: snapshot.hostUserId,
+              language: snapshot.language,
+              selectedCategoryIds: snapshot.selectedCategoryIds
+            });
             this.cdr.detectChanges();
           } catch (e) {
             console.error('[Lobby] Error processing initial snapshot:', e);
@@ -399,7 +403,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
           this.lobbyState = snapshot;
           this.errorMessage = '';
           this.emptySlots = Array(Math.max(0, 5 - (snapshot?.players?.length || 0))).fill(null);
-          this.playerState.updateState({ hostUserId: snapshot.hostUserId });
+          this.playerState.updateState({
+            hostUserId: snapshot.hostUserId,
+            language: snapshot.language,
+            selectedCategoryIds: snapshot.selectedCategoryIds
+          });
           this.cdr.detectChanges();
         } catch (e) {
           console.error('[Lobby] Error processing ReceiveLobbyUpdate:', e);

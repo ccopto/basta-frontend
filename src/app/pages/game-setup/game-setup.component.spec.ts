@@ -83,7 +83,7 @@ describe('GameSetupComponent', () => {
     component.onStartGame();
     tick();
 
-    expect(mockSignalr.invoke).toHaveBeenCalledWith('UpdateGameSettings', 5, 60, [2]);
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('UpdateGameSettings', 5, 60, [2], 'en');
     expect(mockSignalr.invoke).toHaveBeenCalledWith('StartGame');
     expect(mockPlayerState.updateState).toHaveBeenCalledWith({
       selectedCategoryIds: [2],
@@ -136,7 +136,7 @@ describe('GameSetupComponent', () => {
     component.onStartGame();
     tick();
 
-    expect(mockSignalr.invoke).toHaveBeenCalledWith('UpdateGameSettings', 10, 45, [1]);
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('UpdateGameSettings', 10, 45, [1], 'en');
     expect(mockSignalr.invoke).toHaveBeenCalledWith('StartGame');
   }));
 
@@ -170,4 +170,54 @@ describe('GameSetupComponent', () => {
     const btn = fixture.debugElement.query(By.css('.btn-primary')).nativeElement;
     expect(btn.disabled).toBeTrue();
   });
+
+  it('should initialize language from game snapshot and fetch categories in that language', () => {
+    // Reset call counters
+    mockGameService.getGame.calls.reset();
+    mockGameService.getCategories.calls.reset();
+
+    mockGameService.getGame.and.returnValue(of({
+      gameCode: 'ABCD',
+      totalRounds: 5,
+      timerDuration: 60,
+      language: 'es'
+    } as any));
+
+    component.ngOnInit();
+
+    expect(component.gameLanguage()).toBe('es');
+    expect(mockGameService.getCategories).toHaveBeenCalledWith('es');
+  });
+
+  it('should reload categories and filter out invalid selected category IDs on setLanguage', () => {
+    component.selectedCategoryIds = new Set([1, 2]);
+    component.availableCategories = [
+      { categoryId: 1, name: 'Fruits' },
+      { categoryId: 2, name: 'Animals' }
+    ];
+
+    // mock return of only category 1 in Spanish
+    mockGameService.getCategories.and.returnValue(of([
+      { categoryId: 1, name: 'Frutas' }
+    ]));
+
+    component.setLanguage('es');
+
+    expect(component.gameLanguage()).toBe('es');
+    expect(mockGameService.getCategories).toHaveBeenCalledWith('es');
+    expect(component.availableCategories).toEqual([{ categoryId: 1, name: 'Frutas' }]);
+    expect(component.selectedCategoryIds.has(1)).toBeTrue();
+    expect(component.selectedCategoryIds.has(2)).toBeFalse(); // 2 is filtered out because it is not in Spanish list
+  });
+
+  it('should pass gameLanguage as fourth argument to UpdateGameSettings', fakeAsync(() => {
+    component.toggleCategory(1);
+    component.gameLanguage.set('es');
+    mockSignalr.invoke.calls.reset();
+
+    component.onStartGame();
+    tick();
+
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('UpdateGameSettings', 5, 60, [1], 'es');
+  }));
 });

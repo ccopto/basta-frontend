@@ -194,4 +194,36 @@ describe('GameComponent', () => {
     tick();
     expect(mockSignalr.invoke).toHaveBeenCalledWith('StartRound');
   }));
+
+  it('should fetch categories using the player state language when selectedCategoryIds exist in state', fakeAsync(() => {
+    mockGameService.getCategories.calls.reset();
+    
+    Object.defineProperty(mockPlayerState, 'currentState', {
+      get: () => ({ gameCode: 'ABCD', nickname: 'Nick', userId: 1, selectedCategoryIds: [1], hostUserId: 1, language: 'es' }),
+      configurable: true
+    });
+    
+    const localFixture = TestBed.createComponent(GameComponent);
+    localFixture.detectChanges();
+    tick();
+    
+    expect(mockGameService.getCategories).toHaveBeenCalledWith('es');
+  }));
+
+  it('should fetch categories using the game snapshot language when selectedCategoryIds do not exist in state', fakeAsync(() => {
+    mockGameService.getCategories.calls.reset();
+    
+    Object.defineProperty(mockPlayerState, 'currentState', {
+      get: () => ({ gameCode: 'ABCD', nickname: 'Nick', userId: 1, selectedCategoryIds: [], hostUserId: 1, language: 'en' }),
+      configurable: true
+    });
+    
+    mockGameService.getGame.and.returnValue(of({ selectedCategoryIds: [2], language: 'fr' } as any));
+    
+    const localFixture = TestBed.createComponent(GameComponent);
+    localFixture.detectChanges();
+    tick();
+    
+    expect(mockGameService.getCategories).toHaveBeenCalledWith('fr');
+  }));
 });
