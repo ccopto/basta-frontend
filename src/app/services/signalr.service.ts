@@ -89,12 +89,10 @@ export class SignalrService {
       this.registerConnectionEvents();
       
       // Re-register any listeners that were requested before the connection was built
-      this._eventSubjects.forEach((subject, eventName) => {
+      this._eventSubjects.forEach((_, eventName) => {
         if (!this.registeredHubMethods.has(eventName)) {
           this.hubConnection!.on(eventName, (data: any) => {
-            this.zone.run(() => {
-              subject.next(data);
-            });
+            this.emitEvent(eventName, data);
           });
           this.registeredHubMethods.add(eventName);
         }
@@ -111,12 +109,9 @@ export class SignalrService {
         if (!this._eventSubjects.has(eventName)) {
           this._eventSubjects.set(eventName, new ReplaySubject<any>(1));
         }
-        const subject = this._eventSubjects.get(eventName)!;
         if (!this.registeredHubMethods.has(eventName)) {
           this.hubConnection.on(eventName, (data: any) => {
-            this.zone.run(() => {
-              subject.next(data);
-            });
+            this.emitEvent(eventName, data);
           });
           this.registeredHubMethods.add(eventName);
         }
@@ -192,20 +187,28 @@ export class SignalrService {
    * @param eventName The name of the SignalR event to listen for.
    */
   on<T>(eventName: string): Subject<T> {
-    if (!this._eventSubjects.has(eventName)) {
-      this._eventSubjects.set(eventName, new ReplaySubject<any>(1));
-    }
-    const subject = this._eventSubjects.get(eventName)!;
+    const subject = this.ensureEventSubject<T>(eventName);
 
     if (this.hubConnection && !this.registeredHubMethods.has(eventName)) {
       this.hubConnection.on(eventName, (data: T) => {
-        this.zone.run(() => {
-          subject.next(data);
-        });
+        this.emitEvent(eventName, data);
       });
       this.registeredHubMethods.add(eventName);
     }
     return subject;
+  }
+
+  private emitEvent<T>(eventName: string, data: T): void {
+    this.zone.run(() => {
+      this.ensureEventSubject<T>(eventName).next(data);
+    });
+  }
+
+  private ensureEventSubject<T>(eventName: string): Subject<T> {
+    if (!this._eventSubjects.has(eventName)) {
+      this._eventSubjects.set(eventName, new ReplaySubject<T>(1));
+    }
+    return this._eventSubjects.get(eventName)!;
   }
 
   /**

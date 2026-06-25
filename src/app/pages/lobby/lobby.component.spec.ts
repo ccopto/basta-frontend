@@ -93,6 +93,23 @@ describe('LobbyComponent', () => {
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/game', 'ABCD']);
   }));
 
+  it('should reset SignalR event buffers on destroy', () => {
+    component.ngOnDestroy();
+    expect(mockSignalr.resetEvents).toHaveBeenCalled();
+    expect(mockSignalr.off).not.toHaveBeenCalled();
+  });
+
+  it('should preserve SignalR event buffers while navigating from lobby to game', fakeAsync(() => {
+    tick();
+    mockSignalr.resetEvents.calls.reset();
+
+    gameStartedSubject.next();
+    component.ngOnDestroy();
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/game', 'ABCD']);
+    expect(mockSignalr.resetEvents).not.toHaveBeenCalled();
+  }));
+
   it('should display error message when getGame fails', fakeAsync(() => {
     // Override the mock for this test
     mockGameService.getGame.and.returnValue(throwError(() => ({ message: 'API Error' })));

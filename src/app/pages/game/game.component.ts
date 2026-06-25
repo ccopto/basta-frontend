@@ -103,6 +103,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach(s => s.unsubscribe());
+    this.signalrService.resetEvents();
   }
 
   private loadCategories(selectedIds: number[]) {

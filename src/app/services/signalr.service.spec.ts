@@ -143,6 +143,49 @@ describe('SignalrService', () => {
     expect(received).toBeFalse();
   });
 
+  it('should emit future hub events to the new subject after resetEvents', async () => {
+    await service.startConnection();
+    const eventName = 'GameStarted';
+    const s1 = service.on<string>(eventName);
+
+    const onSpy = mockHubConnection.on as jasmine.Spy;
+    const callArgs = onSpy.calls.allArgs().find(args => args[0] === eventName);
+    expect(callArgs).toBeDefined('GameStarted was not registered on the hubConnection');
+    const callback = callArgs![1];
+
+    let oldReceived = false;
+    s1.subscribe(() => oldReceived = true);
+
+    service.resetEvents();
+
+    const s2 = service.on<string>(eventName);
+    let newReceived = '';
+    s2.subscribe(value => newReceived = value);
+
+    callback('fresh event');
+
+    expect(oldReceived).toBeFalse();
+    expect(newReceived).toBe('fresh event');
+  });
+
+  it('should buffer future hub events that arrive after resetEvents before a new subscriber exists', async () => {
+    await service.startConnection();
+    const eventName = 'RoundStarted';
+
+    const onSpy = mockHubConnection.on as jasmine.Spy;
+    const callArgs = onSpy.calls.allArgs().find(args => args[0] === eventName);
+    expect(callArgs).toBeDefined('RoundStarted was not registered on the hubConnection');
+    const callback = callArgs![1];
+
+    service.resetEvents();
+    callback({ letter: 'Z' });
+
+    let receivedLetter = '';
+    service.on<{ letter: string }>(eventName).subscribe(event => receivedLetter = event.letter);
+
+    expect(receivedLetter).toBe('Z');
+  });
+
   it('should re-register proactive listeners when connection is started', async () => {
     // 1. Call on() BEFORE startConnection() is called
     const eventName = 'LobbyUpdate';

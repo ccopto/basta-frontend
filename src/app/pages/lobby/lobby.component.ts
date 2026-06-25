@@ -331,6 +331,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private receiveLobbyUpdateSub: Subject<LobbySnapshot> | null = null;
   private gameStartedSub: Subject<void> | null = null;
+  private isNavigatingToGame = false;
 
   constructor(
     private playerState: PlayerStateService,
@@ -362,6 +363,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    if (!this.isNavigatingToGame) {
+      this.signalrService.resetEvents();
+    }
   }
 
   private async connectToLobby() {
@@ -405,6 +409,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
     this.gameStartedSub = this.signalrService.on<void>('GameStarted');
     this.gameStartedSub.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.isNavigatingToGame = true;
       this.router.navigate(['/game', this.gameCode]);
     });
     

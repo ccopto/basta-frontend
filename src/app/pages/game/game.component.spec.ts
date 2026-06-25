@@ -107,6 +107,11 @@ describe('GameComponent', () => {
     expect(mockSignalr.invoke).toHaveBeenCalledWith('JoinGame', 'ABCD', 1, 'Nick');
   }));
 
+  it('should reset SignalR event buffers on destroy', () => {
+    component.ngOnDestroy();
+    expect(mockSignalr.resetEvents).toHaveBeenCalled();
+  });
+
   it('should update state when RoundStarted event is received', fakeAsync(() => {
     tick();
     
