@@ -78,6 +78,19 @@ git commit -m "feat: implement lobby page"  ← too broad
 ### Conventional Commits
 `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `style`
 
+### Release Tag SemVer Rules
+
+Release tags use SemVer with a `v` prefix: `vX.Y.Z`.
+
+- `X` is the major version. The current final target is `v1.0.0`.
+- Before the final target, all project history tags must remain below `v1.0.0`.
+- `Y` increments sequentially for feature/epic functionality in chronological merge order. The Epic number is a planning guideline only; do not map Epic numbers directly to minor versions.
+- `Z` increments for fixes and maintenance changes, including `fix`, `test`, `chore`, and `docs`.
+- If a fix or maintenance PR merges before the first feature/epic tag, use `v0.0.Z`.
+- Version each repository independently: parent, backend, and frontend can have different current `0.Y.Z` values.
+- Tags should point at the merge commit on `develop` for the PR they represent.
+- When the final target is reached, tag the current `develop` commit with both the latest pre-`1.0.0` tag and `v1.0.0`.
+
 ---
 
 ## Testing Conventions
