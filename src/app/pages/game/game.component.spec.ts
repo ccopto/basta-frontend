@@ -271,5 +271,38 @@ describe('GameComponent', () => {
 
     localStorage.removeItem(key);
   }));
-});
+  it('should auto-submit validation when no answers require peer review', fakeAsync(() => {
+    const data: any = {
+      players: [{
+        userId: 1, nickname: 'Host',
+        answers: [{
+          answerId: 1, categoryId: 1, answer: 'Apple',
+          dictionaryValid: true, requiresPeerReview: false
+        }]
+      }]
+    };
+    
+    // Simulate DisplayScoring
+    displayScoringSubject.next(data);
+    tick(3000); // Wait for auto-advance delay
+    
+    expect(mockSignalr.invoke).toHaveBeenCalledWith('SubmitValidation', {});
+  }));
 
+  it('should show validation grid when peer review is needed', fakeAsync(() => {
+    const data: any = {
+      players: [{
+        userId: 1, nickname: 'Host',
+        answers: [{
+          answerId: 1, categoryId: 1, answer: 'zzfake',
+          dictionaryValid: false, requiresPeerReview: true
+        }]
+      }]
+    };
+    
+    displayScoringSubject.next(data);
+    tick();
+    
+    expect(component.currentPhase()).toBe('validating');
+  }));
+});
