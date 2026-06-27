@@ -63,6 +63,7 @@ export class GameComponent implements OnInit, OnDestroy {
   
   private gameCode: string = '';
   private timerSubscription?: Subscription;
+  private autoAdvanceTimer?: ReturnType<typeof setTimeout>;
   private subscriptions: Subscription[] = [];
 
   constructor(
@@ -102,6 +103,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    clearTimeout(this.autoAdvanceTimer);
     this.subscriptions.forEach(s => s.unsubscribe());
     this.signalrService.resetEvents();
   }
@@ -166,7 +168,7 @@ export class GameComponent implements OnInit, OnDestroy {
           .some(a => a.requiresPeerReview);
           
         if (!requiresReview) {
-          setTimeout(() => {
+          this.autoAdvanceTimer = setTimeout(() => {
             this.signalrService.invoke('SubmitValidation', {});
           }, 3000);
         }

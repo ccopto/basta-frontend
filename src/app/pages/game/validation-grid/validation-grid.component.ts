@@ -270,6 +270,8 @@ export class ValidationGridComponent implements OnInit, OnChanges {
   }
 
   private updatePeerReviewMap() {
+    if (!this.scoringData || !this.scoringData.players) return;
+    
     this.peerReviewMap = {};
     for (const player of this.scoringData.players) {
       this.peerReviewMap[player.userId] = {};
