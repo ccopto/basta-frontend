@@ -432,6 +432,14 @@ export class HomeComponent {
   onJoinGame() {
     this.showJoinForm = !this.showJoinForm;
     this.errorMessage = '';
+
+    if (this.showJoinForm) {
+      const createNick = this.gameForm.value.nickname;
+      const joinNick = this.joinForm.value.nickname;
+      if (createNick && !joinNick) {
+        this.joinForm.patchValue({ nickname: createNick });
+      }
+    }
   }
 
   onJoinSubmit() {

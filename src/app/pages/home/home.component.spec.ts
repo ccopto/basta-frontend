@@ -115,4 +115,21 @@ describe('HomeComponent', () => {
     }
     expect(hasStrayPlus).toBeFalse();
   });
+  it('should carry create nickname into join form when opening join flow', () => {
+    component.gameForm.patchValue({ nickname: 'PlayerOne' });
+
+    component.onJoinGame();
+
+    expect(component.showJoinForm).toBeTrue();
+    expect(component.joinForm.get('nickname')?.value).toBe('PlayerOne');
+  });
+
+  it('should not overwrite an existing join nickname when toggling join form', () => {
+    component.gameForm.patchValue({ nickname: 'CreateName' });
+    component.joinForm.patchValue({ nickname: 'JoinName' });
+
+    component.onJoinGame();
+
+    expect(component.joinForm.get('nickname')?.value).toBe('JoinName');
+  });
 });

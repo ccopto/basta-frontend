@@ -123,4 +123,25 @@ describe('ValidationGridComponent', () => {
     const table = fixture.debugElement.query(By.css('.validation-table'));
     expect(table).toBeNull();
   });
+  it('should render review categories when categories arrive after scoring data', () => {
+    component.categories = [];
+    component.scoringData = mockScoringData as any;
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.queryAll(By.css('thead th')).length).toBe(1);
+
+    component.categories = mockCategories;
+    component.ngOnChanges({
+      categories: {
+        previousValue: [],
+        currentValue: mockCategories,
+        firstChange: false,
+        isFirstChange: () => false
+      }
+    });
+    fixture.detectChanges();
+
+    const headers = fixture.debugElement.queryAll(By.css('thead th'));
+    expect(headers.length).toBe(3);
+  });
 });

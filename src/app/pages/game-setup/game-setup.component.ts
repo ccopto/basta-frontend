@@ -450,6 +450,11 @@ export class GameSetupComponent implements OnInit, OnDestroy {
           this.totalRounds.set(snapshot.totalRounds);
           this.timerDuration.set(snapshot.timerDuration);
           this.gameLanguage.set(snapshot.language || 'en');
+          
+          if (snapshot.selectedCategoryIds && snapshot.selectedCategoryIds.length > 0) {
+            this.selectedCategoryIds = new Set(snapshot.selectedCategoryIds);
+          }
+          
           this.cdr.detectChanges();
         });
       }),

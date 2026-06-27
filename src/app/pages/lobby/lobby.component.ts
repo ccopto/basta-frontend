@@ -422,11 +422,17 @@ export class LobbyComponent implements OnInit, OnDestroy {
     });
     
     // 3. Connect SignalR
-    this.signalrService.startConnection().then(() => {
+    this.signalrService.startConnection().then(async () => {
       // 4. Join the group on HUB
-      this.signalrService.invoke('JoinGame', this.gameCode, this.currentUserId, this.playerState.currentState.nickname);
+      try {
+        await this.signalrService.invoke('JoinGame', this.gameCode, this.currentUserId, this.playerState.currentState.nickname);
+      } catch (err) {
+        console.warn('[Lobby] JoinGame failed:', err);
+        this.errorMessage = 'Failed to join the live lobby. Please try rejoining.';
+      }
     }).catch(err => {
-      console.warn('[Lobby] SignalR connection/join failed:', err);
+      console.warn('[Lobby] SignalR connection failed:', err);
+      this.errorMessage = 'Failed to connect. Please try rejoining.';
     });
   }
 

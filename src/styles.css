@@ -9,11 +9,13 @@
 :root {
   /* Primary Palette */
   --color-primary: hsl(243, 75%, 59%);
+  --color-primary-rgb: 79, 70, 229;
   --color-primary-light: hsl(243, 80%, 70%);
   --color-primary-dark: hsl(243, 70%, 45%);
 
   /* Accent */
   --color-accent: hsl(340, 82%, 52%);
+  --color-accent-rgb: 236, 72, 153;
   --color-accent-light: hsl(340, 85%, 65%);
 
   /* Success / Warning / Error */

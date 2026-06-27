@@ -195,4 +195,15 @@ describe('LobbyComponent', () => {
       selectedCategoryIds: [1, 3]
     }));
   }));
+  it('should show an error when hub JoinGame fails after connection starts', fakeAsync(() => {
+    mockSignalr.startConnection.and.returnValue(Promise.resolve());
+    mockSignalr.invoke.and.returnValue(Promise.reject(new Error('Join rejected')));
+
+    fixture = TestBed.createComponent(LobbyComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    tick();
+
+    expect(component.errorMessage).toBe('Failed to join the live lobby. Please try rejoining.');
+  }));
 });

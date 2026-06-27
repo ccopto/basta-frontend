@@ -8,6 +8,23 @@ All notable changes for `ccopto/basta-frontend`.
 - **Fixes**: bug fixes, security fixes, correctness fixes, and reliability repairs.
 - **Patches**: documentation, tests, CI, dependency maintenance, release markers, and other non-feature maintenance work.
 
+## `v1.0.2` - 2026-06-27
+
+Audit remediation fixes across the application state, validation, and design tokens.
+
+**Fixes**
+
+- Preserved the nickname when switching between create and join forms.
+- Initialized selected categories correctly from the server snapshot on the setup page.
+- Surfaced specific SignalR `JoinGame` connection failures in the lobby instead of masking them.
+- Implemented an auto-advance behavior when no answers in a round require peer review.
+- Fixed category data binding in the validation grid to properly initialize even if scoring data arrives late.
+- Declared missing RGB variants of primary and accent colors for the design system.
+
+**Patches**
+
+- Added comprehensive tests for nickname carryover, category preselection, lobby join failures, auto-advance, and design tokens.
+
 ## `v1.0.1` - 2026-06-26
 
 Release documentation and generated-artifact ignore maintenance.
