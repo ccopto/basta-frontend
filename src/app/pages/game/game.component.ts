@@ -160,6 +160,16 @@ export class GameComponent implements OnInit, OnDestroy {
       this.signalrService.on<ScoringData>('DisplayScoring').subscribe((data) => {
         this.scoringData.set(data);
         this.currentPhase.set('validating');
+        
+        const requiresReview = data.players
+          .flatMap(p => p.answers)
+          .some(a => a.requiresPeerReview);
+          
+        if (!requiresReview) {
+          setTimeout(() => {
+            this.signalrService.invoke('SubmitValidation', {});
+          }, 3000);
+        }
       })
     );
 

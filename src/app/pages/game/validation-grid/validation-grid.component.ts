@@ -242,21 +242,33 @@ export class ValidationGridComponent implements OnInit, OnChanges {
 
   /** True when at least one answer in the round requires peer review. */
   get hasPeerReviewAnswers(): boolean {
-    return this.peerReviewCategories.length > 0;
+    if (!this.scoringData?.players) return false;
+    for (const player of this.scoringData.players) {
+      for (const av of player.answers) {
+        if (av.requiresPeerReview) return true;
+      }
+    }
+    return false;
   }
 
   ngOnInit() {
-    // Initialize validations only for categories that need peer review
+    this.updatePeerReviewMap();
     this.peerReviewCategories.forEach(cat => {
       this.validations[cat.categoryId] = true;
     });
-    this.updatePeerReviewMap();
   }
+
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['scoringData'] && this.scoringData) {
+    if ((changes['scoringData'] || changes['categories']) && this.scoringData) {
       this.updatePeerReviewMap();
+      this.peerReviewCategories.forEach(cat => {
+        if (this.validations[cat.categoryId] === undefined) {
+          this.validations[cat.categoryId] = true;
+        }
+      });
     }
   }
+
   private updatePeerReviewMap() {
     this.peerReviewMap = {};
     for (const player of this.scoringData.players) {
