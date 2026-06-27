@@ -220,4 +220,39 @@ describe('GameSetupComponent', () => {
 
     expect(mockSignalr.invoke).toHaveBeenCalledWith('UpdateGameSettings', 5, 60, [1], 'es');
   }));
+  it('should initialize selected categories from game snapshot', fakeAsync(() => {
+    mockGameService.getGame.and.returnValue(of({
+      gameCode: 'ABCD',
+      totalRounds: 5,
+      timerDuration: 60,
+      language: 'en',
+      selectedCategoryIds: [1]
+    } as any));
+
+    fixture = TestBed.createComponent(GameSetupComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    tick();
+
+    expect(component.selectedCategoryIds.has(1)).toBeTrue();
+  }));
+
+  it('should enable Start Game when snapshot already has selected categories', fakeAsync(() => {
+    mockGameService.getGame.and.returnValue(of({
+      gameCode: 'ABCD',
+      totalRounds: 5,
+      timerDuration: 60,
+      language: 'en',
+      selectedCategoryIds: [1]
+    } as any));
+
+    fixture = TestBed.createComponent(GameSetupComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+
+    const startButton = fixture.debugElement.query(By.css('[data-testid="setup-start-game"]')).nativeElement;
+    expect(startButton.disabled).toBeFalse();
+  }));
 });
